@@ -1,5 +1,6 @@
 import { EAT_TICKS, SCALE_ATTR, SWEEP_TICKS, TEST_TAG } from './config.ts';
 import { loadComponents } from './items.ts';
+import { damageId, isMonster, listSize, reportInterop, serverPlayers, tagsOf } from './java.ts';
 import { clearDirty, isDirty, markDirty, refreshPlayer } from './players.ts';
 import {
   dropEaten,
@@ -15,7 +16,8 @@ import {
  * The rules in the game. Every tick, players whose inventory changed are counted again and, when
  * their worth moved, the hostiles around them re-scale. Every EAT_TICKS ticks, hostiles standing
  * on dropped diamonds eat them. Every SWEEP_TICKS ticks, everything is counted again in case an
- * event was missed (a mob walking out of a tunnel, a `/give` that changed no tracked slot).
+ * event was missed (a mob walking out of a tunnel, a `/give` that changed no tracked slot), and
+ * any Java members resolved for the first time are logged.
  */
 export function registerEvents(): void {
   loadComponents();
@@ -26,15 +28,17 @@ export function registerEvents(): void {
     const server = event.server;
     if (ticks % SWEEP_TICKS === 0) {
       rescaleEveryone(server);
+      reportInterop();
     } else {
-      let players = server.getPlayerList().getPlayers();
-      for (let i = 0; i < players.size(); i++) {
+      let players = serverPlayers(server);
+      let size = listSize(players);
+      for (let i = 0; i < size; i++) {
         let player = players.get(i);
         if (isDirty(player) && refreshPlayer(server, player)) rescaleAround(player);
       }
     }
     clearDirty();
-    if (ticks % EAT_TICKS === 0) eatAround(server.getPlayerList().getPlayers());
+    if (ticks % EAT_TICKS === 0) eatAround(serverPlayers(server));
   });
 
   PlayerEvents.inventoryChanged((event) => {
@@ -43,8 +47,8 @@ export function registerEvents(): void {
 
   EntityEvents.spawned((event) => {
     const entity = event.entity;
-    if (!entity.isMonster()) return;
-    if (entity.getTags().contains(TEST_TAG)) {
+    if (!isMonster(entity)) return;
+    if (tagsOf(entity).contains(TEST_TAG)) {
       (entity as KubeLivingEntity).setAttributeBaseValue(SCALE_ATTR, 4);
       return;
     }
@@ -56,7 +60,7 @@ export function registerEvents(): void {
   });
 
   EntityEvents.beforeHurt((event) => {
-    if (event.source.getMsgId() !== 'inWall') return;
+    if (damageId(event.source) !== 'inWall') return;
     if (ignoresSuffocation(event.entity)) event.cancel();
   });
 }

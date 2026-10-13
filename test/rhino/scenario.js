@@ -71,17 +71,20 @@ function fakeData() {
   };
 }
 
+// The fakes look like KubeJS from a script, not like vanilla Minecraft: KubeJS renames and
+// hides vanilla members (Entity#getStringUUID is `stringUuid`, Entity#level() and
+// Level#players() are hidden behind KubeJS's `level` and `players` properties, Level#getGameTime
+// is `time`, DamageSource#getMsgId is `getType()`). The vanilla names are deliberately missing
+// here, so code that calls them fails this check the way it fails in the game (2026-10-13).
+function getter(target, name, read) {
+  Object.defineProperty(target, name, { get: read, enumerable: true, configurable: true });
+}
+
 function fakeItem(id, count, container, bundle) {
   return {
-    getId: function () {
-      return id;
-    },
-    getCount: function () {
-      return count;
-    },
-    isEmpty: function () {
-      return count === 0;
-    },
+    id: id,
+    count: count,
+    empty: count === 0,
     get: function (type) {
       if (type === 'container' && container) {
         return {
@@ -143,55 +146,43 @@ Box.prototype.intersects = function (o) {
 // ---- The world ----
 
 function fakeServer() {
-  var server = { commands: [], players: [] };
+  var server = { commands: [], playerArray: [] };
   server.runCommandSilent = function (command) {
     server.commands.push(String(command));
   };
-  server.getPlayerList = function () {
-    return {
-      getPlayers: function () {
-        return javaList(server.players);
-      },
-    };
-  };
+  getter(server, 'players', function () {
+    return javaList(server.playerArray);
+  });
   return server;
 }
 
 function fakeLevel() {
-  var level = { entities: [], playerList: [], time: 1000 };
+  var level = { entities: [], playerList: [], time: 1000, dimension: 'minecraft:overworld' };
   level.solid = function () {
     return false;
   };
   level.getBlock = function (x, y, z) {
     return {
-      getBlockState: function () {
-        return {
-          blocksMotion: function () {
-            return level.solid(x, y, z);
-          },
-        };
+      blockState: {
+        blocksMotion: function () {
+          return level.solid(x, y, z);
+        },
       },
     };
   };
-  level.players = function () {
+  getter(level, 'players', function () {
     return javaList(level.playerList);
-  };
+  });
   level.getEntitiesWithin = function (box) {
     var found = [];
     for (var i = 0; i < level.entities.length; i++) {
       var entity = level.entities[i];
-      if (!entity.removed && entity.getBoundingBox().intersects(box)) found.push(entity);
+      if (!entity.removed && entity.boundingBox.intersects(box)) found.push(entity);
     }
     return javaList(found);
   };
-  level.getDimension = function () {
-    return 'minecraft:overworld';
-  };
   level.registryAccess = function () {
     return {};
-  };
-  level.getGameTime = function () {
-    return level.time;
   };
   return level;
 }
@@ -206,58 +197,37 @@ function fakeEntity(level, server, type, x, y, z, width, height) {
     tagList: [],
     persistentData: fakeData(),
     server: server,
-    uuid: '00000000-0000-0000-0000-' + ('000000000000' + nextUuid).slice(-12),
-    width: width,
-    height: height,
+    level: level,
+    x: x,
+    y: y,
+    z: z,
+    monster: false,
+    living: false,
+    stringUuid: '00000000-0000-0000-0000-' + ('000000000000' + nextUuid).slice(-12),
     messages: [],
   };
+  entity.uuid = entity.stringUuid;
   entity.scale = function () {
     return 1;
   };
-  entity.isMonster = function () {
-    return false;
-  };
-  entity.isLiving = function () {
-    return false;
-  };
-  entity.isAlive = function () {
+  getter(entity, 'alive', function () {
     return !entity.removed;
+  });
+  entity.tags = {
+    contains: function (tag) {
+      return entity.tagList.indexOf(tag) >= 0;
+    },
   };
-  entity.getTags = function () {
-    return {
-      contains: function (tag) {
-        return entity.tagList.indexOf(tag) >= 0;
-      },
-      size: function () {
-        return entity.tagList.length;
-      },
-    };
-  };
-  entity.getStringUUID = function () {
-    return entity.uuid;
-  };
-  entity.level = function () {
-    return level;
-  };
-  entity.getX = function () {
-    return x;
-  };
-  entity.getY = function () {
-    return y;
-  };
-  entity.getZ = function () {
-    return z;
-  };
-  entity.getBbWidth = function () {
+  getter(entity, 'bbWidth', function () {
     return width * entity.scale();
-  };
-  entity.getBbHeight = function () {
+  });
+  getter(entity, 'bbHeight', function () {
     return height * entity.scale();
-  };
-  entity.getBoundingBox = function () {
-    var half = entity.getBbWidth() / 2;
-    return new Box(x - half, y, z - half, x + half, y + entity.getBbHeight(), z + half);
-  };
+  });
+  getter(entity, 'boundingBox', function () {
+    var half = entity.bbWidth / 2;
+    return new Box(x - half, y, z - half, x + half, y + entity.bbHeight, z + half);
+  });
   entity.discard = function () {
     entity.removed = true;
   };
@@ -281,12 +251,8 @@ function fakeMob(level, server, type, x, y, z, width, height, attack) {
   mob.attrs[KNOCKBACK] = 0;
   if (attack !== null) mob.attrs[ATTACK] = attack;
   mob.health = 20;
-  mob.isMonster = function () {
-    return true;
-  };
-  mob.isLiving = function () {
-    return true;
-  };
+  mob.monster = true;
+  mob.living = true;
   mob.scale = function () {
     return mob.attrs[SCALE];
   };
@@ -297,15 +263,12 @@ function fakeMob(level, server, type, x, y, z, width, height, attack) {
   mob.setAttributeBaseValue = function (id, value) {
     if (id in mob.attrs) mob.attrs[id] = value;
   };
-  mob.getHealth = function () {
-    return mob.health;
-  };
   mob.setHealth = function (value) {
     mob.health = Math.min(value, mob.attrs[MAX_HEALTH]);
   };
-  mob.getMaxHealth = function () {
+  getter(mob, 'maxHealth', function () {
     return mob.attrs[MAX_HEALTH];
-  };
+  });
   return mob;
 }
 
@@ -315,37 +278,28 @@ function fakePlayer(level, server, name, x, y, z) {
   player.slots = [];
   player.carried = EMPTY;
   player.statusMessages = [];
-  player.isLiving = function () {
-    return true;
-  };
-  player.getInventory = function () {
-    return {
-      getContainerSize: function () {
-        return 41;
-      },
-      getItem: function (slot) {
-        return player.slots[slot] || EMPTY;
-      },
-    };
-  };
-  player.containerMenu = {
-    getCarried: function () {
-      return player.carried;
+  player.living = true;
+  player.inventory = {
+    containerSize: 41,
+    getItem: function (slot) {
+      return player.slots[slot] || EMPTY;
     },
   };
+  player.containerMenu = {};
+  getter(player.containerMenu, 'carried', function () {
+    return player.carried;
+  });
   player.setStatusMessage = function (message) {
     player.statusMessages.push(String(message));
   };
   level.playerList.push(player);
-  server.players.push(player);
+  server.playerArray.push(player);
   return player;
 }
 
 function fakeDrop(level, server, item, x, y, z) {
   var drop = fakeEntity(level, server, 'minecraft:item', x, y, z, 0.25, 0.25);
-  drop.getItem = function () {
-    return item;
-  };
+  drop.item = item;
   return drop;
 }
 
@@ -623,8 +577,15 @@ function hurt(entity, msgId) {
   __kjs.hurtHandlers[0]({
     entity: entity,
     source: {
-      getMsgId: function () {
+      getType: function () {
         return msgId;
+      },
+      type: function () {
+        return {
+          toString: function () {
+            return 'DamageType[msgId=' + msgId + ', scaling=never, exhaustion=0.1]';
+          },
+        };
       },
     },
     cancel: function () {

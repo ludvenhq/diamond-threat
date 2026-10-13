@@ -15,6 +15,27 @@ import {
 } from './config.ts';
 import { type At, dropCommand, eatCommands, growCommands } from './effects.ts';
 import { saveStack, toStack } from './items.ts';
+import {
+  blocksMotionAt,
+  boxOf,
+  dimensionOf,
+  discardEntity,
+  gameTimeOf,
+  healthOf,
+  hitboxOf,
+  isAlive,
+  isLiving,
+  isMonster,
+  itemOf,
+  levelOf,
+  listSize,
+  maxHealthOf,
+  positionOf,
+  serverPlayers,
+  tagsOf,
+  typeOf,
+  uuidOf,
+} from './java.ts';
 import { eat, isWithin, nearestPlayer, readEaten, writeEatenStacks } from './mobs.ts';
 import { levelPlayers, refreshPlayer } from './players.ts';
 import {
@@ -33,28 +54,20 @@ import { stackWorth } from './worth.ts';
 /** A living monster that takes part: not a boss, not the `/threat test` zombie, not dead. */
 export function isThreatEntity(entity: KubeEntity): entity is KubeLivingEntity {
   return (
-    entity.isMonster() &&
-    entity.isLiving() &&
-    isThreatMob(entity.type, true) &&
-    entity.isAlive() &&
-    !entity.getTags().contains(TEST_TAG)
+    isMonster(entity) &&
+    isLiving(entity) &&
+    isThreatMob(typeOf(entity), true) &&
+    isAlive(entity) &&
+    !tagsOf(entity).contains(TEST_TAG)
   );
 }
 
 function atEntity(entity: KubeEntity): At {
-  return {
-    dimension: String(entity.level().getDimension()),
-    x: entity.getX(),
-    y: entity.getY(),
-    z: entity.getZ(),
-  };
+  const at = positionOf(entity);
+  return { dimension: dimensionOf(levelOf(entity)), x: at.x, y: at.y, z: at.z };
 }
 
 let roomWarned = false;
-
-function isClear(level: KubeLevel, x: number, y: number, z: number): boolean {
-  return !level.getBlock(x, y, z).getBlockState().blocksMotion();
-}
 
 function clearAcross(
   level: KubeLevel,
@@ -68,7 +81,7 @@ function clearAcross(
   while (steps < WIDTH_MEASURE - 1) {
     let nx = x + dx * (steps + 1);
     let nz = z + dz * (steps + 1);
-    if (!isClear(level, nx, y, nz) || !isClear(level, nx, y + 1, nz)) break;
+    if (blocksMotionAt(level, nx, y, nz) || blocksMotionAt(level, nx, y + 1, nz)) break;
     steps++;
   }
   return steps;
@@ -81,12 +94,13 @@ function clearAcross(
  */
 export function measureRoom(mob: KubeEntity): Room {
   try {
-    let level = mob.level();
-    let x = Math.floor(mob.getX());
-    let y = Math.floor(mob.getY());
-    let z = Math.floor(mob.getZ());
+    let level = levelOf(mob);
+    let at = positionOf(mob);
+    let x = Math.floor(at.x);
+    let y = Math.floor(at.y);
+    let z = Math.floor(at.z);
     let headroom = 0;
-    while (headroom < HEADROOM_MEASURE && isClear(level, x, y + headroom, z)) headroom++;
+    while (headroom < HEADROOM_MEASURE && !blocksMotionAt(level, x, y + headroom, z)) headroom++;
     let widthX = 1 + clearAcross(level, x, y, z, 1, 0) + clearAcross(level, x, y, z, -1, 0);
     let widthZ = 1 + clearAcross(level, x, y, z, 0, 1) + clearAcross(level, x, y, z, 0, -1);
     return { headroom: headroom, width: Math.min(widthX, widthZ, WIDTH_MEASURE) };
@@ -102,7 +116,8 @@ export function measureRoom(mob: KubeEntity): Room {
 /** The mob's hitbox at scale 1: the current hitbox divided by the current scale. */
 function bodyOf(mob: KubeLivingEntity): Body {
   const scale = mob.getAttributeTotalValue(SCALE_ATTR) || 1;
-  return { height: mob.getBbHeight() / scale, width: mob.getBbWidth() / scale };
+  const hitbox = hitboxOf(mob);
+  return { height: hitbox.height / scale, width: hitbox.width / scale };
 }
 
 /** Scales the mob from one scale to another: size, health, attack, knockback resistance. */
@@ -121,30 +136,30 @@ function setScale(mob: KubeLivingEntity, from: number, to: number, effects: bool
     },
     to,
   );
-  const health = mob.getHealth();
-  const oldMax = mob.getMaxHealth();
+  const health = healthOf(mob);
+  const oldMax = maxHealthOf(mob);
   mob.setAttributeBaseValue(SCALE_ATTR, to);
   mob.setAttributeBaseValue(MAX_HEALTH_ATTR, stats.maxHealth);
-  if (stats.attackDamage !== null)
+  if (stats.attackDamage !== null) {
     mob.setAttributeBaseValue(ATTACK_DAMAGE_ATTR, stats.attackDamage);
+  }
   mob.setAttributeBaseValue(
     KNOCKBACK_RESISTANCE_ATTR,
     Math.max(data.getDouble(MOB_KEYS.baseKnockback), stats.knockbackResistance),
   );
-  mob.setHealth(healthAfterResize(health, oldMax, mob.getMaxHealth()));
+  mob.setHealth(healthAfterResize(health, oldMax, maxHealthOf(mob)));
   data.putDouble(MOB_KEYS.scale, to);
 
   if (effects && to > from) {
-    let now = mob.level().getGameTime();
+    let now = gameTimeOf(levelOf(mob));
     let roar =
       !data.contains(MOB_KEYS.roaredAt) ||
       now - data.getDouble(MOB_KEYS.roaredAt) >= ROAR_COOLDOWN_TICKS;
     if (roar) data.putDouble(MOB_KEYS.roaredAt, now);
-    growCommands(atEntity(mob), mob.getBbHeight(), mob.getBbWidth(), to, roar).forEach(
-      (command) => {
-        mob.server.runCommandSilent(command);
-      },
-    );
+    let hitbox = hitboxOf(mob);
+    growCommands(atEntity(mob), hitbox.height, hitbox.width, to, roar).forEach((command) => {
+      mob.server.runCommandSilent(command);
+    });
   }
 }
 
@@ -162,27 +177,30 @@ export function rescale(mob: KubeLivingEntity, playerWorth: number, effects: boo
   if (scaleChanged(applied, next)) setScale(mob, applied, next, effects);
 }
 
+/** The worth of the nearest player within 64 blocks of the mob, or null if there is none. */
+function nearestWorth(mob: KubeEntity, level: KubeLevel): number | null {
+  const nearest = nearestPlayer(levelPlayers(level), positionOf(mob), SPAWN_RADIUS);
+  return nearest === null ? null : nearest.worth;
+}
+
 /** A spawning hostile takes the worth of the nearest player within 64 blocks, if there is one. */
 export function scaleOnSpawn(mob: KubeLivingEntity, level: KubeLevel): void {
-  const nearest = nearestPlayer(
-    levelPlayers(level),
-    { x: mob.getX(), y: mob.getY(), z: mob.getZ() },
-    SPAWN_RADIUS,
-  );
-  if (nearest !== null) rescale(mob, nearest.worth, false);
+  const worth = nearestWorth(mob, level);
+  if (worth !== null) rescale(mob, worth, false);
 }
 
 /** Re-scales every hostile within 48 blocks of the player, each by its own nearest player. */
 export function rescaleAround(player: KubePlayer): number {
-  const level = player.level();
+  const level = levelOf(player);
   const players = levelPlayers(level);
-  const here = { x: player.getX(), y: player.getY(), z: player.getZ() };
-  const entities = level.getEntitiesWithin(player.getBoundingBox().inflate(REAPPLY_RADIUS));
+  const here = positionOf(player);
+  const entities = level.getEntitiesWithin(boxOf(player).inflate(REAPPLY_RADIUS));
+  const size = listSize(entities);
   let count = 0;
-  for (let i = 0; i < entities.size(); i++) {
+  for (let i = 0; i < size; i++) {
     let entity = entities.get(i);
     if (!isThreatEntity(entity)) continue;
-    let at = { x: entity.getX(), y: entity.getY(), z: entity.getZ() };
+    let at = positionOf(entity);
     if (!isWithin(here, at, REAPPLY_RADIUS)) continue;
     let nearest = nearestPlayer(players, at, SPAWN_RADIUS);
     if (nearest === null) continue;
@@ -194,9 +212,10 @@ export function rescaleAround(player: KubePlayer): number {
 
 /** Counts every player's worth and re-scales the hostiles around each: the sweep and `/threat apply`. */
 export function rescaleEveryone(server: KubeServer): number {
-  const players = server.getPlayerList().getPlayers();
+  const players = serverPlayers(server);
+  const size = listSize(players);
   let count = 0;
-  for (let i = 0; i < players.size(); i++) {
+  for (let i = 0; i < size; i++) {
     let player = players.get(i);
     refreshPlayer(server, player);
     count += rescaleAround(player);
@@ -207,27 +226,23 @@ export function rescaleEveryone(server: KubeServer): number {
 /** The mob eats the dropped item: the item is gone, its worth and its stack stay with the mob. */
 function eatItem(mob: KubeLivingEntity, item: KubeItemEntity, worth: number): void {
   const data = mob.persistentData;
-  const stack = saveStack(item.getItem(), item.level());
+  const stack = saveStack(itemOf(item), levelOf(item));
   const before = readEaten(data.getInt(MOB_KEYS.eatenWorth), data.getString(MOB_KEYS.eatenStacks));
   const after = eat(before, worth, stack);
-  item.discard();
+  discardEntity(item);
   data.putInt(MOB_KEYS.eatenWorth, after.worth);
   data.putString(MOB_KEYS.eatenStacks, writeEatenStacks(after));
   eatCommands(atEntity(mob)).forEach((command) => {
     mob.server.runCommandSilent(command);
   });
-  const nearest = nearestPlayer(
-    levelPlayers(mob.level()),
-    { x: mob.getX(), y: mob.getY(), z: mob.getZ() },
-    SPAWN_RADIUS,
-  );
-  rescale(mob, nearest === null ? 0 : nearest.worth, true);
+  rescale(mob, nearestWorth(mob, levelOf(mob)) ?? 0, true);
 }
 
 /** The first hostile within EAT_RADIUS of the item, or null. */
 function hungryMobNear(item: KubeItemEntity): KubeLivingEntity | null {
-  const near = item.level().getEntitiesWithin(item.getBoundingBox().inflate(EAT_RADIUS));
-  for (let i = 0; i < near.size(); i++) {
+  const near = levelOf(item).getEntitiesWithin(boxOf(item).inflate(EAT_RADIUS));
+  const size = listSize(near);
+  for (let i = 0; i < size; i++) {
     let entity = near.get(i);
     if (isThreatEntity(entity)) return entity;
   }
@@ -237,19 +252,19 @@ function hungryMobNear(item: KubeItemEntity): KubeLivingEntity | null {
 /** Dropped items with diamond worth near any player are eaten by a hostile standing on them. */
 export function eatAround(players: JavaList<KubePlayer>): void {
   const seen = new Set<string>();
-  for (let p = 0; p < players.size(); p++) {
+  const playerCount = listSize(players);
+  for (let p = 0; p < playerCount; p++) {
     let player = players.get(p);
-    let entities = player
-      .level()
-      .getEntitiesWithin(player.getBoundingBox().inflate(REAPPLY_RADIUS));
-    for (let i = 0; i < entities.size(); i++) {
+    let entities = levelOf(player).getEntitiesWithin(boxOf(player).inflate(REAPPLY_RADIUS));
+    let size = listSize(entities);
+    for (let i = 0; i < size; i++) {
       let entity = entities.get(i);
-      if (entity.type !== 'minecraft:item') continue;
-      let uuid = entity.getStringUUID();
+      if (typeOf(entity) !== 'minecraft:item') continue;
+      let uuid = uuidOf(entity);
       if (seen.has(uuid)) continue;
       seen.add(uuid);
       let item = entity as KubeItemEntity;
-      let worth = stackWorth(toStack(item.getItem(), 0));
+      let worth = stackWorth(toStack(itemOf(item), 0));
       if (worth <= 0) continue;
       let mob = hungryMobNear(item);
       if (mob !== null) eatItem(mob, item, worth);

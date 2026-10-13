@@ -2,6 +2,7 @@ import { bossbarCommands } from './bossbar.ts';
 import { OFFSET_KEY } from './config.ts';
 import { pickupMessage, playerBarId, threatBar } from './hud.ts';
 import { carriedStacks } from './items.ts';
+import { listSize, playersIn, positionOf, uuidOf } from './java.ts';
 import type { PlayerWorth } from './mobs.ts';
 import { carriedWorth } from './worth.ts';
 
@@ -12,11 +13,11 @@ const shown = new Map<string, number>();
 const dirty = new Set<string>();
 
 export function markDirty(player: KubePlayer): void {
-  dirty.add(player.getStringUUID());
+  dirty.add(uuidOf(player));
 }
 
 export function isDirty(player: KubePlayer): boolean {
-  return dirty.has(player.getStringUUID());
+  return dirty.has(uuidOf(player));
 }
 
 export function clearDirty(): void {
@@ -30,22 +31,18 @@ export function playerWorth(player: KubePlayer): number {
 
 /** The worth mobs take from this player: the one on the boss bar, or counted now if there is none yet. */
 export function knownWorth(player: KubePlayer): number {
-  return shown.get(player.getStringUUID()) ?? playerWorth(player);
+  return shown.get(uuidOf(player)) ?? playerWorth(player);
 }
 
 /** The players in a level with their positions and worth, for nearestPlayer. */
 export function levelPlayers(level: KubeLevel): PlayerWorth[] {
-  const players = level.players();
+  const players = playersIn(level);
+  const size = listSize(players);
   const result: PlayerWorth[] = [];
-  for (let i = 0; i < players.size(); i++) {
+  for (let i = 0; i < size; i++) {
     let player = players.get(i);
-    result.push({
-      id: player.getStringUUID(),
-      x: player.getX(),
-      y: player.getY(),
-      z: player.getZ(),
-      worth: knownWorth(player),
-    });
+    let at = positionOf(player);
+    result.push({ id: uuidOf(player), x: at.x, y: at.y, z: at.z, worth: knownWorth(player) });
   }
   return result;
 }
@@ -56,7 +53,7 @@ export function levelPlayers(level: KubeLevel): PlayerWorth[] {
  * is when the mobs around the player re-scale.
  */
 export function refreshPlayer(server: KubeServer, player: KubePlayer): boolean {
-  const uuid = player.getStringUUID();
+  const uuid = uuidOf(player);
   const worth = playerWorth(player);
   const before = shown.get(uuid);
   if (before === worth) return false;

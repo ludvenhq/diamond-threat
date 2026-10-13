@@ -4,38 +4,26 @@
  * ProbeJS generates typings for the whole game, but they are written for plain JS (its own output
  * says fully TypeScript-compatible typings are not possible) and they are tens of thousands of
  * lines that only exist in a game folder, not in CI. So the game scripts see only this small,
- * strict surface. Each entry names the Java method it maps to; KubeJS exposes `kjs$getFoo()` as
- * `foo` and Java bean getters as properties. When you need something new, check it in ProbeJS or
- * the KubeJS source (https://github.com/kube-mods/kubejs/tree/2101) and add it here.
+ * strict surface. Each entry names the Java method it maps to. When you need something new, check
+ * it in ProbeJS or the KubeJS source (https://github.com/kube-mods/kubejs/tree/2101) and add it.
  *
- * Where a KubeJS property and a vanilla method share a name (`level`, `type`), the scripts call
- * the vanilla method explicitly (`entity.level()`), so Rhino's choice between them never matters.
+ * Only members that take arguments, and KubeJS's own properties that the game has proven, are
+ * typed here. Every zero-argument read (a uuid, a position, a list's size, a block state) goes
+ * through read() in src/java.ts, because in the game some vanilla zero-argument methods are not
+ * callable and a KubeJS property can shadow a vanilla method of the same name.
  */
 
 /** A Minecraft text component. Plain strings are converted by KubeJS. */
 type TextLike = string;
 
-/** java.util.List, as Rhino exposes it. */
+/** java.util.List. Its size is read with listSize() in src/java.ts. */
 interface JavaList<T> {
-  size(): number;
   get(index: number): T;
-}
-
-/** java.util.Iterator */
-interface JavaIterator<T> {
-  hasNext(): boolean;
-  next(): T;
-}
-
-/** java.lang.Iterable */
-interface JavaIterable<T> {
-  iterator(): JavaIterator<T>;
 }
 
 /** A Java Set<String>, as Rhino exposes it. */
 interface JavaStringSet {
   contains(value: string): boolean;
-  size(): number;
 }
 
 /** net.minecraft.nbt.CompoundTag, through KubeJS's `persistentData`. Missing keys read as 0 or ''. */
@@ -50,7 +38,7 @@ interface CompoundTag {
   remove(key: string): void;
 }
 
-/** net.minecraft.nbt.Tag: its toString is SNBT, which commands read back. */
+/** net.minecraft.nbt.Tag: its string is SNBT, which commands read back. */
 interface NbtTag {
   toString(): string;
 }
@@ -65,14 +53,14 @@ interface DataComponentType<T> {
   readonly value?: T;
 }
 
-/** net.minecraft.world.item.component.ItemContainerContents: a shulker box's items. */
+/** net.minecraft.world.item.component.ItemContainerContents: its items via `nonEmptyItems`. */
 interface ItemContainerContents {
-  nonEmptyItems(): JavaIterable<ItemStack>;
+  readonly kind?: 'ItemContainerContents';
 }
 
-/** net.minecraft.world.item.component.BundleContents */
+/** net.minecraft.world.item.component.BundleContents: its items via `items`. */
 interface BundleContents {
-  items(): JavaIterable<ItemStack>;
+  readonly kind?: 'BundleContents';
 }
 
 /** net.minecraft.core.component.DataComponents, loaded with Java.loadClass. */
@@ -81,12 +69,8 @@ interface DataComponentsClass {
   readonly BUNDLE_CONTENTS: DataComponentType<BundleContents>;
 }
 
-/** ItemStack with ItemStackKJS. */
+/** ItemStack with ItemStackKJS. Its id, count and emptiness are read in src/java.ts. */
 interface ItemStack {
-  /** kjs$getId: the registry id, for example `minecraft:diamond`. */
-  getId(): string;
-  getCount(): number;
-  isEmpty(): boolean;
   /** DataComponentHolder#get: null when the stack does not have the component. */
   get<T>(type: DataComponentType<T>): T | null;
   /** ItemStack#save(HolderLookup.Provider): the stack with its components, as NBT. */
@@ -95,25 +79,12 @@ interface ItemStack {
 
 /** net.minecraft.world.entity.player.Inventory: 36 slots, then armour, then the offhand. */
 interface Inventory {
-  getContainerSize(): number;
   getItem(slot: number): ItemStack;
 }
 
-/** net.minecraft.world.inventory.AbstractContainerMenu */
-interface ContainerMenu {
-  /** The stack held on the cursor while a screen is open. */
-  getCarried(): ItemStack;
-}
-
-/** net.minecraft.world.level.block.state.BlockState */
-interface BlockState {
-  /** BlockStateBase#blocksMotion: true for blocks a mob cannot walk through. */
-  blocksMotion(): boolean;
-}
-
-/** dev.latvian.mods.kubejs.level.LevelBlock */
+/** dev.latvian.mods.kubejs.level.LevelBlock: its block state is read in src/java.ts. */
 interface LevelBlock {
-  getBlockState(): BlockState;
+  readonly kind?: 'LevelBlock';
 }
 
 /** net.minecraft.world.phys.AABB */
@@ -121,77 +92,41 @@ interface AABB {
   inflate(amount: number): AABB;
 }
 
-/** net.minecraft.resources.ResourceLocation */
-interface ResourceLocation {
-  toString(): string;
-}
-
-/** ServerLevel with LevelKJS and EntityGetterKJS. */
+/** ServerLevel with LevelKJS and EntityGetterKJS. Players, dimension and time: src/java.ts. */
 interface KubeLevel {
   /** kjs$getBlock(int, int, int) */
   getBlock(x: number, y: number, z: number): LevelBlock;
-  /** Level#players: the players in this level. */
-  players(): JavaList<KubePlayer>;
   /** kjs$getEntitiesWithin: every entity touching the box. */
   getEntitiesWithin(box: AABB): JavaList<KubeEntity>;
-  /** kjs$getDimension, for example `minecraft:overworld`. */
-  getDimension(): ResourceLocation;
-  registryAccess(): RegistryAccess;
-  getGameTime(): number;
 }
 
-/** net.minecraft.server.players.PlayerList */
-interface PlayerList {
-  getPlayers(): JavaList<KubePlayer>;
-}
-
-/** MinecraftServer with MinecraftServerKJS. */
+/** MinecraftServer with MinecraftServerKJS. Its players are read in src/java.ts. */
 interface KubeServer {
   /** kjs$runCommandSilent: runs a command as the server, without chat output. */
   runCommandSilent(command: string): void;
   /** kjs$tell: a chat message to every player. */
   tell(message: TextLike): void;
-  /** kjs$getPersistentData: saved with the world. */
-  readonly persistentData: CompoundTag;
-  getPlayerList(): PlayerList;
 }
 
-/** Entity with EntityKJS. */
+/**
+ * Entity with EntityKJS. The uuid, type, level, position, hitbox, tags and flags are read in
+ * src/java.ts.
+ */
 interface KubeEntity {
-  /** kjs$getType: the registry id, for example `minecraft:zombie`. */
-  readonly type: string;
-  /** kjs$isMonster: true for the vanilla monster category. */
-  isMonster(): boolean;
-  /** kjs$isLiving */
-  isLiving(): boolean;
-  isAlive(): boolean;
-  /** Entity#getTags: the scoreboard tags. */
-  getTags(): JavaStringSet;
   /** kjs$getPersistentData: KubeJS's own tag on the entity, saved with it. */
   readonly persistentData: CompoundTag;
   /** kjs$getServer */
   readonly server: KubeServer;
-  getStringUUID(): string;
-  level(): KubeLevel;
-  getX(): number;
-  getY(): number;
-  getZ(): number;
-  getBoundingBox(): AABB;
-  /** The current hitbox, already multiplied by the scale attribute. */
-  getBbWidth(): number;
-  getBbHeight(): number;
-  /** Removes the entity without a death. */
-  discard(): void;
   /** kjs$tell */
   tell(message: TextLike): void;
 }
 
-/** ItemEntity with ItemEntityKJS: a dropped item. */
+/** ItemEntity with ItemEntityKJS: a dropped item. Its stack is read with itemOf(). */
 interface KubeItemEntity extends KubeEntity {
-  getItem(): ItemStack;
+  readonly kind?: 'ItemEntity';
 }
 
-/** LivingEntity with LivingEntityKJS. */
+/** LivingEntity with LivingEntityKJS. Health is read in src/java.ts. */
 interface KubeLivingEntity extends KubeEntity {
   /**
    * kjs$setAttributeBaseValue. KubeJS converts the attribute id string to a Holder<Attribute>.
@@ -202,26 +137,20 @@ interface KubeLivingEntity extends KubeEntity {
   getAttributeBaseValue(attribute: string): number;
   /** kjs$getAttributeTotalValue: with modifiers; 0 when the mob does not have the attribute. */
   getAttributeTotalValue(attribute: string): number;
-  getHealth(): number;
   setHealth(health: number): void;
-  getMaxHealth(): number;
 }
 
-/** ServerPlayer with PlayerKJS. */
+/** ServerPlayer with PlayerKJS. Its inventory is read in src/java.ts. */
 interface KubePlayer extends KubeLivingEntity {
   /** kjs$getUsername */
   readonly username: string;
   /** kjs$setStatusMessage: the action bar text above the hotbar. */
   setStatusMessage(message: TextLike): void;
-  getInventory(): Inventory;
-  /** Player#containerMenu: the open screen, or the player's own inventory. */
-  readonly containerMenu: ContainerMenu;
 }
 
-/** net.minecraft.world.damagesource.DamageSource */
+/** net.minecraft.world.damagesource.DamageSource: its message id is read in src/java.ts. */
 interface DamageSource {
-  /** The damage type's message id: `inWall` for suffocation. */
-  getMsgId(): string;
+  readonly kind?: 'DamageSource';
 }
 
 /** net.minecraft.commands.CommandSourceStack */

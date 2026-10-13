@@ -106,6 +106,18 @@ exist inside a game folder, so CI could not use them. KubeJS exposes its `kjs$ge
 methods and Java bean getters as properties: `entity.type`, `entity.persistentData`,
 `source.player`.
 
+KubeJS also renames and hides vanilla methods for scripts, with `@RemapForJS` and `@HideFromJS`
+on its mixins (`dev.latvian.mods.kubejs.core.mixin`). In KubeJS 2101.7.2, `Entity#getStringUUID`
+is `getStringUuid`, `Entity#level()` and `Level#players()` are hidden behind KubeJS's `level` and
+`players` properties, `Level#getGameTime` is `getTime`, and `DamageSource#getMsgId` is
+`getType()` (while `type` is vanilla's `type()` record). A plain Rhino has no mixins and sees the
+vanilla names, which is how the first in-game run (2026-10-13) failed with "Cannot find function
+getStringUUID" after every check had passed. So every zero-argument read goes through `read()` in
+`src/java.ts`, which takes candidate names, KubeJS's first, and logs once per load which name
+answered (`Diamond Threat interop:` lines in `logs/kubejs/server.log`). The typings in
+`src/kubejs/kubejs.d.ts` leave those members out, so a direct call does not compile, and the
+Rhino check's fakes use KubeJS's names, not vanilla's.
+
 ## The jar
 
 ```
