@@ -4,23 +4,40 @@
  * same way as the game script.
  */
 import { bossbarCommands } from '../../src/bossbar.ts';
+import { dropCommand, eatCommands, growCommands, roarPitch } from '../../src/effects.ts';
 import { formatScale, pickupMessage, playerBarId, threatBar, threatColor } from '../../src/hud.ts';
-import { eat, isWithin, nearestPlayer, NOTHING_EATEN } from '../../src/mobs.ts';
+import {
+  eat,
+  isWithin,
+  nearestPlayer,
+  NOTHING_EATEN,
+  readEaten,
+  writeEatenStacks,
+} from '../../src/mobs.ts';
 import {
   healthAfterResize,
   isThreatMob,
   mobScale,
+  nextScale,
   roomCap,
   scaleChanged,
   scaledStats,
   scaleForWorth,
 } from '../../src/scale.ts';
-import { carriedWorth, isEdible, stackWorth } from '../../src/worth.ts';
+import { carriedWorth, isContainerItem, isEdible, stackWorth } from '../../src/worth.ts';
 
 declare function __registerCore(core: Record<string, unknown>): void;
 
 __registerCore({
   bossbarCommands: bossbarCommands,
+  dropCommand: dropCommand,
+  eatCommands: eatCommands,
+  growCommands: growCommands,
+  roarPitch: roarPitch,
+  readEaten: readEaten,
+  writeEatenStacks: writeEatenStacks,
+  nextScale: nextScale,
+  isContainerItem: isContainerItem,
   formatScale: formatScale,
   pickupMessage: pickupMessage,
   playerBarId: playerBarId,

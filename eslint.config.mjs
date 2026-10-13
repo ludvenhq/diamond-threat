@@ -18,6 +18,12 @@ const RHINO_UNSUPPORTED = [
   { selector: ':function[async=true]', message: '`async` does not run in Rhino.' },
   { selector: 'Property[computed=true]', message: 'Computed keys do not run on release Rhino.' },
   { selector: 'TSEnumDeclaration', message: 'Use a union of string literals instead of an enum.' },
+  {
+    selector:
+      ':not(:function) > BlockStatement > VariableDeclaration[kind="const"], SwitchCase > VariableDeclaration[kind="const"]',
+    message:
+      'A `const` inside a block (a loop, an if, a try) breaks on every Rhino build: in a loop it keeps its first value, next to a closure it throws a redeclaration error. Use `let`, or declare it at the top of the function.',
+  },
 ];
 
 export default defineConfig(
@@ -34,7 +40,10 @@ export default defineConfig(
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       eqeqeq: 'error',
     },
   },
@@ -48,6 +57,9 @@ export default defineConfig(
       'object-shorthand': ['error', 'never'],
       // Rhino makes `var` block-scoped and gives every loop closure the last value.
       'no-var': 'error',
+      // A `const` inside a block breaks on Rhino, so blocks use `let` even for values that are
+      // never reassigned (RHINO_UNSUPPORTED enforces it).
+      'prefer-const': 'off',
       'no-loop-func': 'error',
       'no-restricted-globals': [
         'error',

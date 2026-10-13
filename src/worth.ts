@@ -28,6 +28,14 @@ export function carriedWorth(stacks: Stack[]): number {
   return worth;
 }
 
+/**
+ * Items that carry other items: every shulker box colour and the bundle (and the dyed bundles
+ * added after 1.21.1). Only these are opened when counting worth.
+ */
+export function isContainerItem(id: string): boolean {
+  return /(shulker_box|bundle)$/.test(id);
+}
+
 /** Mobs eat a dropped item when it has any diamond worth, inside it or nested in it. */
 export function isEdible(stack: Stack): boolean {
   return stackWorth(stack) > 0;

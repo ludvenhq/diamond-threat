@@ -93,13 +93,16 @@ refuses to write a bundle that contains it.
 | `class`                              | functions and plain objects                                |
 | `async`, `await`, `Promise`          | events and ticks                                           |
 | `enum`                               | a union of string literals                                 |
+| `const` inside a loop, `if` or `try` | `let` (`const` only at the top of a function)              |
 
 `?.`, `??` and `||=` are fine to write: the build lowers them. Destructuring without defaults,
 arrow functions, template literals, `let`/`const`, `for...of` over arrays, `Map` and `Set` all run.
 [architecture.md](architecture.md#rhino) has the full table and the reasons.
 
-Two Rhino behaviours to keep in mind: `var` is block-scoped (lint bans `var`), and a closure
-created in a `for (let ...)` loop sees the last value (lint bans functions in loops).
+Three Rhino behaviours to keep in mind: `var` is block-scoped (lint bans `var`), a closure
+created in a `for (let ...)` loop sees the last value (lint bans functions in loops), and a
+`const` inside a block keeps its first value or throws a redeclaration error (lint and the build
+refuse it; use `let`). The lint rule `prefer-const` is off in `src/` for that reason.
 
 ### Using more of the KubeJS API
 

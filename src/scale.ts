@@ -72,6 +72,15 @@ export function mobScale(playerWorth: number, eatenWorth: number, room: Room, bo
   return Math.min(scaleForWorth(playerWorth + eatenWorth), roomCap(room, body));
 }
 
+/**
+ * The scale to apply next, from the one applied now, the one worth asks for, and the room cap.
+ * Shrinking follows worth at once. Growing goes as far as the room allows but never below the
+ * applied scale: a mob that fits where it stands is never shrunk by a rough room measurement.
+ */
+export function nextScale(applied: number, wanted: number, cap: number): number {
+  return wanted <= applied ? wanted : Math.max(applied, Math.min(wanted, cap));
+}
+
 /** Health grows with the square of the scale, damage with the scale; knockback resistance is full at x4. */
 export function scaledStats(base: BaseStats, scale: number): ScaledStats {
   return {

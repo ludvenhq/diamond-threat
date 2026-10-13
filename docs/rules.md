@@ -82,10 +82,15 @@ and creeper explosions are vanilla: a giant skeleton is harder to kill, not a be
 
 ## When mobs change
 
-- A hostile that spawns takes the worth of the nearest player within 64 blocks.
+- A hostile that spawns takes the worth of the nearest player within 64 blocks. It arrives at its
+  size without a roar.
 - When your worth changes, every hostile within 48 blocks of you re-scales. A mob that actually
-  grows roars and bursts with particles; a mob held back by the room around it stays quiet.
-- A sweep every second catches anything the events missed.
+  grows roars and bursts with particles; a mob held back by the room around it stays quiet. A mob
+  roars at most once every two seconds; the particles show on every growth.
+- A sweep every second catches anything the events missed, including a mob that walks out of a
+  tunnel into room to grow.
+- Room only ever holds growth back. A mob shrinks when worth drops, never because the space around
+  it is tight: if it fits where it stands, it keeps its size.
 
 ## Drop and eat
 

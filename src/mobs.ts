@@ -27,6 +27,28 @@ export function eat(eaten: Eaten, stackWorth: number, stack: string): Eaten {
   return { worth: eaten.worth + stackWorth, stacks: eaten.stacks.concat([stack]) };
 }
 
+/** The eaten stacks as one string for the mob's persistent data. */
+export function writeEatenStacks(eaten: Eaten): string {
+  return JSON.stringify(eaten.stacks);
+}
+
+/** Reads what writeEatenStacks wrote; anything unreadable is treated as nothing to drop. */
+export function readEaten(worth: number, stacks: string): Eaten {
+  let parsed: unknown;
+  try {
+    parsed = stacks === '' ? [] : JSON.parse(stacks);
+  } catch (_unreadable) {
+    parsed = [];
+  }
+  const list: string[] = [];
+  if (Array.isArray(parsed)) {
+    for (const value of parsed) {
+      if (typeof value === 'string') list.push(value);
+    }
+  }
+  return { worth: worth, stacks: list };
+}
+
 function distanceSquared(a: Point, b: Point): number {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
@@ -47,7 +69,7 @@ export function nearestPlayer(
   let best: PlayerWorth | null = null;
   let bestDistance = radius * radius;
   for (const player of players) {
-    const distance = distanceSquared(player, at);
+    let distance = distanceSquared(player, at);
     if (distance <= bestDistance) {
       best = player;
       bestDistance = distance;

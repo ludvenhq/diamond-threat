@@ -12,6 +12,28 @@ export const MOD_ID = 'diamond_threat';
  */
 export const SCALE_ATTR = 'minecraft:generic.scale';
 
+/** The other attributes growing changes, by their 1.21.1 ids (renamed without `generic.` in 1.21.2). */
+export const MAX_HEALTH_ATTR = 'minecraft:generic.max_health';
+export const ATTACK_DAMAGE_ATTR = 'minecraft:generic.attack_damage';
+export const KNOCKBACK_RESISTANCE_ATTR = 'minecraft:generic.knockback_resistance';
+
+/**
+ * What the scripts keep in a mob's persistent data, saved with the mob: the scale applied, the
+ * base stats from before the first scaling, what it has eaten, and when it last roared.
+ */
+export const MOB_KEYS = {
+  scale: 'diamond_threat_scale',
+  baseHealth: 'diamond_threat_base_health',
+  baseAttack: 'diamond_threat_base_attack',
+  baseKnockback: 'diamond_threat_base_knockback',
+  eatenWorth: 'diamond_threat_eaten_worth',
+  eatenStacks: 'diamond_threat_eaten',
+  roaredAt: 'diamond_threat_roared_at',
+};
+
+/** The `/threat set` offset, kept in the player's persistent data until `/threat clear`. */
+export const OFFSET_KEY = 'diamond_threat_offset';
+
 /** The tag that marks the zombie `/threat test` summons. */
 export const TEST_TAG = `${MOD_ID}_test`;
 
@@ -69,6 +91,18 @@ export const SWEEP_TICKS = 20;
 
 /** A hostile eats a dropped item with worth within this many blocks. */
 export const EAT_RADIUS = 1;
+
+/** Dropped items are checked for hungry mobs every this many ticks. */
+export const EAT_TICKS = 4;
+
+/** A mob roars at most once in this many ticks; its particles show on every growth. */
+export const ROAR_COOLDOWN_TICKS = 40;
+
+/** Players within this many blocks hear a roar. */
+export const ROAR_RADIUS = 48;
+
+/** How deep shulker boxes and bundles are opened when counting worth. */
+export const MAX_NESTING = 4;
 
 /** Monsters that never grow: the bosses. */
 export const EXCLUDED_MOBS: ReadonlySet<string> = new Set([

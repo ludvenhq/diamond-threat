@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { eat, isWithin, nearestPlayer, NOTHING_EATEN, type PlayerWorth } from '../src/mobs.ts';
+import {
+  eat,
+  isWithin,
+  nearestPlayer,
+  NOTHING_EATEN,
+  type PlayerWorth,
+  readEaten,
+  writeEatenStacks,
+} from '../src/mobs.ts';
 import { mobScale } from '../src/scale.ts';
 import { stackWorth } from '../src/worth.ts';
 
@@ -54,5 +62,19 @@ describe('isWithin', () => {
   it('measures in three dimensions', () => {
     expect(isWithin({ x: 0, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, 1)).toBe(true);
     expect(isWithin({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 0 }, 1)).toBe(false);
+  });
+});
+
+describe('readEaten and writeEatenStacks', () => {
+  it('round-trips the stacks a mob ate, SNBT quotes included', () => {
+    const fed = eat(eat(NOTHING_EATEN, 9, '{count:1,id:"minecraft:diamond_block"}'), 1, 'b');
+    expect(readEaten(fed.worth, writeEatenStacks(fed))).toEqual(fed);
+  });
+
+  it('reads nothing to drop from missing or broken data', () => {
+    expect(readEaten(0, '')).toEqual(NOTHING_EATEN);
+    expect(readEaten(5, 'not json')).toEqual({ worth: 5, stacks: [] });
+    expect(readEaten(5, '{"a":1}')).toEqual({ worth: 5, stacks: [] });
+    expect(readEaten(5, '["ok",3]')).toEqual({ worth: 5, stacks: ['ok'] });
   });
 });

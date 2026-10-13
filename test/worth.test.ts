@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { carriedWorth, isEdible, type Stack, stackWorth } from '../src/worth.ts';
+import { carriedWorth, isContainerItem, isEdible, type Stack, stackWorth } from '../src/worth.ts';
 
 const stack = (id: string, count = 1, contents: Stack[] = []): Stack => ({
   id: `minecraft:${id}`,
@@ -67,5 +67,20 @@ describe('worth', () => {
     expect(isEdible(stack('shulker_box', 1, [stack('diamond')]))).toBe(true);
     expect(isEdible(stack('shulker_box', 1, [stack('dirt', 64)]))).toBe(false);
     expect(isEdible(stack('rotten_flesh'))).toBe(false);
+  });
+});
+
+describe('isContainerItem', () => {
+  it('opens shulker boxes of every colour and bundles', () => {
+    expect(isContainerItem('minecraft:shulker_box')).toBe(true);
+    expect(isContainerItem('minecraft:red_shulker_box')).toBe(true);
+    expect(isContainerItem('minecraft:bundle')).toBe(true);
+    expect(isContainerItem('minecraft:blue_bundle')).toBe(true);
+  });
+
+  it('leaves everything else closed', () => {
+    expect(isContainerItem('minecraft:chest')).toBe(false);
+    expect(isContainerItem('minecraft:diamond')).toBe(false);
+    expect(isContainerItem('minecraft:shulker_shell')).toBe(false);
   });
 });

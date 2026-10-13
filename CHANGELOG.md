@@ -10,5 +10,10 @@ is a notable change.
 ### Added
 
 - The project: build pipeline, docs and `/threat test`, which proves the toolchain in game.
-- The rules as tested functions, not yet wired into the game: worth (with nested shulker boxes
-  and bundles), scale, the room cap, scaled stats, the eat rule and the THREAT boss bar.
+- The rules in the game: carried worth (with nested shulker boxes and bundles), growing hostiles
+  with the room cap, health, attack and knockback resistance, the roar and particles, drop and
+  eat with the eaten items dropped back on death, suffocation immunity for big mobs, the THREAT
+  boss bar and the action bar.
+- `/threat set`, `/threat clear` and `/threat apply` for testing and filming.
+- The lint rule and the build's syntax gate refuse a `const` inside a block, which breaks on every
+  Rhino build.

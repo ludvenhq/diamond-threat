@@ -87,3 +87,39 @@ same(
 );
 same(commands[4], 'bossbar set diamond_threat:threat_0a1b-2c max 48', 'bar max');
 same(commands[5], 'bossbar set diamond_threat:threat_0a1b-2c value 24', 'bar value');
+
+// Containers, the next scale, the eaten record.
+same(core.isContainerItem('minecraft:lime_shulker_box'), true, 'a shulker box opens');
+same(core.isContainerItem('minecraft:chest'), false, 'a chest item does not');
+same(core.nextScale(3, 2, 1), 2, 'shrinks with worth');
+same(core.nextScale(1, 3, 2), 2, 'grows as far as the room allows');
+same(core.nextScale(2.5, 3, 1), 2.5, 'never shrinks for room');
+var fed = core.eat(core.NOTHING_EATEN, 9, '{count:1,id:"minecraft:diamond_block"}');
+var back = core.readEaten(9, core.writeEatenStacks(fed));
+same(back.stacks.length, 1, 'eaten round trip length');
+same(back.stacks[0], '{count:1,id:"minecraft:diamond_block"}', 'eaten round trip, quotes kept');
+same(core.readEaten(3, 'nonsense').stacks.length, 0, 'broken data drops nothing');
+
+// Commands: toFixed and number formatting on Rhino.
+same(String(core.roarPitch(2)), '0.95', 'roar pitch at x2');
+var at = { dimension: 'minecraft:overworld', x: 10.5, y: 64, z: -3.25 };
+same(
+  core.growCommands(at, 3.9, 1.2, 2, true).join(' | '),
+  'execute in minecraft:overworld run particle minecraft:poof 10.50 65.95 -3.25 0.60 1.30 0.60 0.05 30 normal | ' +
+    'execute in minecraft:overworld positioned 10.50 64.00 -3.25 run playsound minecraft:entity.ravager.roar hostile @a[distance=..48] ~ ~ ~ 3 0.95',
+  'grow commands',
+);
+same(
+  core.dropCommand(at, '{count:2,id:"minecraft:diamond"}'),
+  'execute in minecraft:overworld run summon minecraft:item 10.50 64.50 -3.25 {Item:{count:2,id:"minecraft:diamond"},PickupDelay:10}',
+  'drop command',
+);
+same(core.eatCommands(at).length, 1, 'one eat command');
+
+// The nearest of several players: each pass of the loop must see its own distance.
+var three = [
+  { id: 'far', x: 30, y: 64, z: 0, worth: 0 },
+  { id: 'near', x: 5, y: 64, z: 0, worth: 0 },
+  { id: 'mid', x: 10, y: 64, z: 0, worth: 0 },
+];
+same(core.nearestPlayer(three, { x: 0, y: 64, z: 0 }, 64).id, 'near', 'nearest of three');

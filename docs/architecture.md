@@ -71,6 +71,14 @@ Also on every build: `var` is block-scoped, reassigning a `const` is silently ig
 made in a `for (let ...)` loop all see the last value, and `JSON.stringify({ a: 1 })` gives
 `{"a":1.0}`.
 
+A `const` is only safe at the top of a function body and in a loop's head
+(`for (const x of xs)`). Inside any other block it breaks on every build (found 2026-10-13, when
+the game glue first ran on Rhino): in a loop body it keeps its first value on every pass, so a
+loop over 41 inventory slots counted the first slot 41 times, and in an `if` block that also
+makes a closure, the function's second call throws `redeclaration of var`. `let` works in both
+places, so `src/` uses `let` inside blocks, and the lint rule and the syntax gate both refuse a
+`const` there.
+
 So the code targets the release builds. Four layers keep it inside that subset:
 
 1. **Types:** `tsconfig.json` gives `src/` only the ES2015 library plus `Array.prototype.includes`,

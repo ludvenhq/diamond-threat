@@ -6,7 +6,9 @@
  * that scope, and everything below runs once per load (game start and every `/reload`).
  */
 import { registerCommands } from './commands.ts';
+import { registerEvents } from './events.ts';
 
 registerCommands();
+registerEvents();
 
 console.info(`Diamond Threat ${__VERSION__} loaded`);

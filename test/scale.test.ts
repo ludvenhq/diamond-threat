@@ -5,6 +5,7 @@ import {
   healthAfterResize,
   isThreatMob,
   mobScale,
+  nextScale,
   roomCap,
   scaleChanged,
   scaledStats,
@@ -152,5 +153,21 @@ describe('isThreatMob', () => {
   it('never takes animals or other friendly mobs', () => {
     expect(isThreatMob('minecraft:cow', false)).toBe(false);
     expect(isThreatMob('minecraft:villager', false)).toBe(false);
+  });
+});
+
+describe('nextScale', () => {
+  it('shrinks to what worth asks for, whatever the room', () => {
+    expect(nextScale(3, 2, 1)).toBe(2);
+    expect(nextScale(3, 1, 8)).toBe(1);
+  });
+
+  it('grows as far as the room allows', () => {
+    expect(nextScale(1, 3, 2)).toBe(2);
+    expect(nextScale(1, 3, 4)).toBe(3);
+  });
+
+  it('never shrinks a mob because of the room alone', () => {
+    expect(nextScale(2.5, 3, 1)).toBe(2.5);
   });
 });

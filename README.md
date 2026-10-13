@@ -9,8 +9,8 @@ for good. Keep them in an ender chest, or throw them into lava.
 [![CI](https://github.com/ludvenhq/diamond-threat/actions/workflows/ci.yml/badge.svg)](https://github.com/ludvenhq/diamond-threat/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> **Status: in development, not released yet.** The rules are designed ([docs/rules.md](docs/rules.md))
-> and being built. The current build has the toolchain and `/threat test` only. Releases will be on
+> **Status: in development, not released yet.** Every rule in [docs/rules.md](docs/rules.md) runs
+> in the game and is being playtested. Releases will be on
 > CurseForge, Modrinth and the [releases page](https://github.com/ludvenhq/diamond-threat/releases).
 
 ## How it plays

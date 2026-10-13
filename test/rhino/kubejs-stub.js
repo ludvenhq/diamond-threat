@@ -3,7 +3,12 @@
 // the syntax release Rhino supports (no shorthand, spread, rest or classes).
 var __kjs = {
   commandHandlers: [],
+  tickHandlers: [],
   spawnedHandlers: [],
+  deathHandlers: [],
+  hurtHandlers: [],
+  inventoryHandlers: [],
+  loadedClasses: [],
   log: [],
 };
 
@@ -27,6 +32,9 @@ var ServerEvents = {
   commandRegistry: function (handler) {
     __kjs.commandHandlers.push(handler);
   },
+  tick: function (handler) {
+    __kjs.tickHandlers.push(handler);
+  },
 };
 
 var EntityEvents = {
@@ -37,11 +45,35 @@ var EntityEvents = {
       __kjs.spawnedHandlers.push({ type: typeOrHandler, handler: handler });
     }
   },
+  death: function (handler) {
+    __kjs.deathHandlers.push(handler);
+  },
+  beforeHurt: function (handler) {
+    __kjs.hurtHandlers.push(handler);
+  },
 };
 
-// A Brigadier literal builder that keeps the tree so the scenario can walk it.
-function FakeLiteral(name) {
+var PlayerEvents = {
+  inventoryChanged: function (handler) {
+    __kjs.inventoryHandlers.push(handler);
+  },
+};
+
+// The vanilla component types, as plain strings the fake items understand.
+var __COMPONENTS = { CONTAINER: 'container', BUNDLE_CONTENTS: 'bundle' };
+
+var Java = {
+  loadClass: function (name) {
+    __kjs.loadedClasses.push(name);
+    if (name === 'net.minecraft.core.component.DataComponents') return __COMPONENTS;
+    throw new Error('class not available in the stub: ' + name);
+  },
+};
+
+// A Brigadier builder (literal or argument) that keeps the tree so the scenario can walk it.
+function FakeLiteral(name, type) {
   this.name = name;
+  this.type = type || null;
   this.children = [];
   this.predicate = null;
   this.run = null;

@@ -31,10 +31,26 @@ function isNode(value: unknown): value is AstNode {
 }
 
 const LOGICAL_ASSIGNMENT = new Set(['||=', '&&=', '??=']);
+const LOOPS = new Set([
+  'ForStatement',
+  'ForInStatement',
+  'ForOfStatement',
+  'WhileStatement',
+  'DoWhileStatement',
+]);
+const FUNCTIONS = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression']);
 
-/** Returns why this node cannot run on release Rhino, or null when it can. */
-function problemWith(node: AstNode, parent: AstNode | null): string | null {
+/**
+ * Returns why this node cannot run on release Rhino, or null when it can. `constAllowed` is true
+ * where a `const` is safe on Rhino: at the top of a function body and in a loop's head.
+ */
+function problemWith(node: AstNode, parent: AstNode | null, constAllowed: boolean): string | null {
   switch (node.type) {
+    case 'VariableDeclaration':
+      return node.kind === 'const' && !constAllowed
+        ? 'a `const` inside a block breaks on every Rhino build (in a loop it keeps its first ' +
+            'value, next to a closure it throws a redeclaration error); use `let`'
+        : null;
     case 'SpreadElement':
       return 'spread (`...x`) does not run on release Rhino';
     case 'RestElement':
@@ -113,18 +129,28 @@ export function findRhinoProblems(code: string): RhinoProblem[] {
     }
   }
 
-  const visit = (node: AstNode, parent: AstNode | null): void => {
-    const problem = problemWith(node, parent);
+  // A `const` is safe on Rhino only directly in a function body (or the wrapper's top level) and
+  // in a loop's head (`for (const x of xs)` gets a fresh value each pass). In any other block,
+  // Rhino keeps a loop body's first value and throws "redeclaration" on the second call of a
+  // function whose block makes a closure.
+  const visit = (node: AstNode, parent: AstNode | null, constAllowed: boolean): void => {
+    const problem = problemWith(node, parent, constAllowed);
     if (problem !== null) report(node, problem);
-    for (const value of Object.values(node)) {
+    const isFunctionBody =
+      node.type === 'BlockStatement' && parent !== null && FUNCTIONS.has(parent.type);
+    for (const [key, value] of Object.entries(node)) {
+      const childAllowed =
+        node.type === 'Program' ||
+        isFunctionBody ||
+        (LOOPS.has(node.type) && (key === 'left' || key === 'init'));
       if (Array.isArray(value)) {
-        for (const item of value) if (isNode(item)) visit(item, node);
+        for (const item of value) if (isNode(item)) visit(item, node, childAllowed);
       } else if (isNode(value)) {
-        visit(value, node);
+        visit(value, node, childAllowed);
       }
     }
   };
-  visit(program, null);
+  visit(program, null, true);
 
   return problems.sort((a, b) => a.line - b.line || a.column - b.column);
 }
