@@ -8,22 +8,27 @@ can change before 1.0, and every change is listed in the [changelog](../CHANGELO
 
 Your **worth** is the diamond value of everything you carry:
 
-| Item               | Worth |
-| ------------------ | ----: |
-| Diamond            |     1 |
-| Block of diamond   |     9 |
-| Diamond sword      |     2 |
-| Diamond pickaxe    |     3 |
-| Diamond axe        |     3 |
-| Diamond shovel     |     1 |
-| Diamond hoe        |     2 |
-| Diamond helmet     |     5 |
-| Diamond chestplate |     8 |
-| Diamond leggings   |     7 |
-| Diamond boots      |     4 |
+| Item                  | Worth |
+| --------------------- | ----: |
+| Diamond               |     1 |
+| Block of diamond      |     9 |
+| Diamond ore           |     1 |
+| Deepslate diamond ore |     1 |
+| Diamond sword         |     2 |
+| Diamond pickaxe       |     3 |
+| Diamond axe           |     3 |
+| Diamond shovel        |     1 |
+| Diamond hoe           |     2 |
+| Diamond helmet        |     5 |
+| Diamond chestplate    |     8 |
+| Diamond leggings      |     7 |
+| Diamond boots         |     4 |
+| Enchanting table      |     2 |
+| Jukebox               |     1 |
 
-Gear counts at its recipe cost, so crafting your diamonds into a block or a chestplate does not
-hide them.
+Gear counts at its recipe cost, so crafting your diamonds into a block, a chestplate or an
+enchanting table does not hide them, and ore mined with Silk Touch counts as the diamond inside it.
+Netherite gear does not count.
 
 **What counts** is what you carry: the main inventory, the hotbar, the armour slots, the offhand,
 and the contents of any shulker box or bundle you carry, however deeply nested.
@@ -50,15 +55,17 @@ zombified piglins, spiders by day) grow too and stay neutral until provoked.
 
 ## Room to grow
 
-A mob never grows bigger than the space around it:
+A mob never grows bigger than the space around it. It has to fit both up and across:
 
 ```
-scale <= headroom / 2      (clear blocks above the mob, measured up to 8)
-scale <= width / 0.6       (clear width on the narrower horizontal axis, measured up to 5)
+scale <= headroom / mob height   (clear blocks above the mob, measured up to 8)
+scale <= width / mob width       (clear width on the narrower horizontal axis, measured up to 5)
 ```
 
-A zombie in a two-high tunnel stays normal size and grows the moment it follows you into a
-cavern. A zombie in a two-wide ravine grows to about three times its size and no more.
+A zombie is 1.95 blocks tall and 0.6 wide. In a two-high tunnel it stays normal size and grows
+the moment it follows you into a cavern; in a two-wide ravine it grows to about x3.3 and no more.
+Because room is measured only 8 blocks up, a tall mob stops early even in the open: an enderman
+reaches about x2.7. Scale moves in steps of 1/16, the change one diamond makes.
 
 ## What growing does
 
@@ -97,9 +104,9 @@ that despawns takes what it ate with it, just like a dropped item that despawns.
 ## On screen
 
 - **Boss bar:** `THREAT x2.5 ◆ 24`, your scale multiplier and your worth. The bar fills to 48, the
-  worth where scale caps, in six notches of x0.5, and turns from green to yellow to red. A mob
-  that has eaten is bigger than the bar says.
-- **Action bar** when a diamond enters your inventory: `+1 ◆ mobs grow`.
+  worth where scale caps, in six notches of x0.5. It is green below x2, yellow below x3 and red
+  from x3. A mob that has eaten is bigger than the bar says.
+- **Action bar** when your worth goes up: `+1 ◆ mobs grow`, with the worth gained.
 
 Nothing else is added to the screen.
 

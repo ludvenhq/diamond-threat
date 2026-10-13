@@ -1,18 +1,24 @@
 /**
  * Runs the built bundle on real KubeJS Rhino jars: the oldest build KubeJS accepts, the release
- * most players have, and the newest beta. test/rhino/scenario.js drives the handlers with fake
- * events and asserts on the results, so this catches what the syntax gate cannot: wrong results,
- * scoping differences, number formatting.
+ * most players have, and the newest beta. Two scenarios run, in one shared scope like KubeJS's:
+ * test/rhino/scenario.js drives the game script's handlers with fake events, and
+ * test/rhino/core-scenario.js calls the pure rules through a second bundle
+ * (test/rhino/core-entry.ts). This catches what the syntax gate cannot: wrong results, scoping
+ * differences, number formatting.
  *
- * Needs a Java 21+ JDK (scripts/lib/java.ts): skipped locally without one, fails in CI. The jars are downloaded from the KubeJS maven once, checked against pinned SHA-256
- * sums, and cached in .cache/rhino/.
+ * Needs a Java 21+ JDK (scripts/lib/java.ts): skipped locally without one, fails in CI. The jars
+ * are downloaded from the KubeJS maven once, checked against pinned SHA-256 sums, and cached in
+ * .cache/rhino/.
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import * as esbuild from 'esbuild';
+import { rhinoBundleOptions } from './lib/bundle.ts';
 import { requireJava } from './lib/java.ts';
 import { readModMeta, scriptFileName } from './lib/mod.ts';
+import { findRhinoProblems } from './lib/rhino-syntax.ts';
 
 interface RhinoBuild {
   version: string;
@@ -74,7 +80,8 @@ function asKubeJsLoadsIt(code: string): string {
 
 const java = requireJava('rhino-check');
 
-const bundle = join('build', 'contentpack', 'server_scripts', scriptFileName(readModMeta()));
+const meta = readModMeta();
+const bundle = join('build', 'contentpack', 'server_scripts', scriptFileName(meta));
 if (!existsSync(bundle)) {
   console.error(`rhino-check: ${bundle} is missing; run npm run build first`);
   process.exit(1);
@@ -82,6 +89,21 @@ if (!existsSync(bundle)) {
 const loaded = join('build', 'rhino', 'bundle.js');
 mkdirSync(join('build', 'rhino'), { recursive: true });
 writeFileSync(loaded, asKubeJsLoadsIt(readFileSync(bundle, 'utf8')));
+
+// The pure rules, bundled the same way and held to the same syntax gate.
+const coreResult = await esbuild.build(
+  rhinoBundleOptions(meta, join('test', 'rhino', 'core-entry.ts')),
+);
+const coreCode = coreResult.outputFiles?.[0]?.text ?? '';
+const coreProblems = findRhinoProblems(coreCode);
+if (coreProblems.length > 0) {
+  for (const problem of coreProblems) {
+    console.error(`core bundle line ${String(problem.line)}: ${problem.message}`);
+  }
+  process.exit(1);
+}
+const core = join('build', 'rhino', 'core.js');
+writeFileSync(core, asKubeJsLoadsIt(coreCode));
 
 let failed = false;
 for (const build of RHINO_BUILDS) {
@@ -94,7 +116,9 @@ for (const build of RHINO_BUILDS) {
       join('test', 'rhino', 'RhinoCheck.java'),
       join('test', 'rhino', 'kubejs-stub.js'),
       loaded,
+      core,
       join('test', 'rhino', 'scenario.js'),
+      join('test', 'rhino', 'core-scenario.js'),
     ],
     { encoding: 'utf8' },
   );

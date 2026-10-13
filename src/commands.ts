@@ -1,5 +1,6 @@
 import { bossbarCommands } from './bossbar.ts';
-import { MOD_ID, SCALE_ATTR, TEST_TAG } from './config.ts';
+import { CAP_WORTH, MOD_ID, SCALE_ATTR, TEST_TAG } from './config.ts';
+import { pickupMessage, threatBar } from './hud.ts';
 
 /**
  * `/threat test`: proves the whole toolchain in one command. It summons a still zombie four
@@ -18,18 +19,10 @@ function runTest(source: CommandSource): number {
   server.runCommandSilent(
     `execute as ${name} at @s run summon minecraft:zombie ^ ^ ^4 {Tags:["${TEST_TAG}"],NoAI:1b,PersistenceRequired:1b}`,
   );
-  const bar = {
-    id: `${MOD_ID}:test`,
-    title: 'THREAT x4 ◆ 48',
-    color: 'red' as const,
-    notches: 6 as const,
-    max: 48,
-    value: 48,
-  };
-  bossbarCommands(bar, name).forEach((command) => {
+  bossbarCommands(threatBar(CAP_WORTH, `${MOD_ID}:test`), name).forEach((command) => {
     server.runCommandSilent(command);
   });
-  player.setStatusMessage('+48 ◆ mobs grow');
+  player.setStatusMessage(pickupMessage(CAP_WORTH) ?? '');
   player.tell(
     `Diamond Threat ${__VERSION__}: test zombie summoned. It should be four times its size.`,
   );

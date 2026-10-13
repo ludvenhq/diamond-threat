@@ -4,14 +4,15 @@
  *   build/contentpack/contentpack.json
  *   build/contentpack/server_scripts/diamond-threat.js
  *
- * esbuild bundles src/ into one function-wrapped script, lowers `?.` and `??`, and replaces
- * `__VERSION__`. The Rhino syntax gate then checks the output; a bundle that fails it is never
+ * esbuild bundles src/ into one function-wrapped script (scripts/lib/bundle.ts has the Rhino
+ * settings). The Rhino syntax gate then checks the output; a bundle that fails it is never
  * written, so the game keeps the last good one. `--watch` rebuilds on every save for the
  * edit, `/reload`, play loop (docs/development.md).
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import * as esbuild from 'esbuild';
+import { rhinoBundleOptions } from './lib/bundle.ts';
 import { contentPackJson, readModMeta, scriptFileName } from './lib/mod.ts';
 import { findRhinoProblems } from './lib/rhino-syntax.ts';
 
@@ -44,18 +45,8 @@ function writeOutput(code: string): boolean {
 }
 
 const options: esbuild.BuildOptions = {
-  entryPoints: ['src/main.ts'],
-  bundle: true,
-  format: 'iife',
-  platform: 'neutral',
-  // ES2019 makes esbuild lower `?.`, `??` and logical assignment, which release Rhino gets wrong.
-  // The rest of the syntax Rhino lacks cannot be lowered by esbuild; lint keeps it out of src/.
-  target: 'es2019',
-  write: false,
-  legalComments: 'none',
+  ...rhinoBundleOptions(meta, 'src/main.ts'),
   banner: { js: banner },
-  define: { __VERSION__: JSON.stringify(meta.version) },
-  logLevel: 'warning',
 };
 
 if (watch) {

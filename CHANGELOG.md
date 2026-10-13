@@ -9,4 +9,6 @@ is a notable change.
 
 ### Added
 
-- The project: build pipeline, docs and a smoke script that proves the toolchain in game.
+- The project: build pipeline, docs and `/threat test`, which proves the toolchain in game.
+- The rules as tested functions, not yet wired into the game: worth (with nested shulker boxes
+  and bundles), scale, the room cap, scaled stats, the eat rule and the THREAT boss bar.

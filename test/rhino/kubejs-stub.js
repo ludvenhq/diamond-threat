@@ -64,3 +64,9 @@ FakeLiteral.prototype.child = function (name) {
   }
   throw new Error('no subcommand ' + name + ' under ' + this.name);
 };
+
+// The pure rules, handed over by the core bundle (test/rhino/core-entry.ts).
+var __core = null;
+function __registerCore(core) {
+  __core = core;
+}

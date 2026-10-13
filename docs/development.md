@@ -60,16 +60,19 @@ bundle on three real Rhino builds, the pack, and the jar check. It must be green
 
 ### Where things go
 
-| Path                     | What                                                                   |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `src/main.ts`            | The entry point: registers everything                                  |
-| `src/config.ts`          | Constants: ids, the scale attribute, later the tuning numbers          |
-| `src/*.ts` (pure)        | Rules as plain functions: no KubeJS globals, unit tested               |
-| `src/commands.ts`, ...   | Game glue: event handlers and commands that call the pure functions    |
-| `src/kubejs/kubejs.d.ts` | The KubeJS API the scripts use, typed by hand                          |
-| `scripts/`               | Build, checks, pack and link (Node, not Rhino)                         |
-| `test/*.test.ts`         | Unit tests (Vitest)                                                    |
-| `test/rhino/`            | The Rhino check: a KubeJS stub and a scenario that drives the handlers |
+| Path                       | What                                                                  |
+| -------------------------- | --------------------------------------------------------------------- |
+| `src/main.ts`              | The entry point: registers everything                                 |
+| `src/config.ts`            | Every id and tuning number: the worth table, the caps, the radii      |
+| `src/worth.ts`             | Pure: what a stack and an inventory are worth                         |
+| `src/scale.ts`             | Pure: scale from worth, the room cap, stats, health on resize         |
+| `src/mobs.ts`              | Pure: the eat rule, the nearest player                                |
+| `src/hud.ts`, `bossbar.ts` | Pure: the boss bar and action bar text, the `/bossbar` commands       |
+| `src/commands.ts`, ...     | Game glue: event handlers and commands that call the pure functions   |
+| `src/kubejs/kubejs.d.ts`   | The KubeJS API the scripts use, typed by hand                         |
+| `scripts/`                 | Build, checks, pack and link (Node, not Rhino)                        |
+| `test/*.test.ts`           | Unit tests (Vitest)                                                   |
+| `test/rhino/`              | The Rhino check: a KubeJS stub, the game scenario, the rules scenario |
 
 Keep the rules pure: a function that takes numbers and returns numbers can be tested in Node and
 reasoned about. The glue only reads from the game, calls the rules and writes the result back.
@@ -111,13 +114,13 @@ works by throwing, so never wrap it in `try`/`catch`.
 
 ## Tests
 
-| Layer       | Command               | What it proves                                                                  |
-| ----------- | --------------------- | ------------------------------------------------------------------------------- |
-| Unit        | `npm test`            | The rules and the build tools, in Node                                          |
-| Syntax gate | `npm run build`       | The bundle has no syntax release Rhino rejects                                  |
-| Rhino check | `npm run check:rhino` | The bundle loads and its handlers give the right results on Rhino 81, 85 and 91 |
-| Jar check   | `npm run check:jar`   | The jar opens the way NeoForge and KubeLoader open it                           |
-| In the game | `/threat test`        | Real events, real attributes, the real HUD                                      |
+| Layer       | Command               | What it proves                                                                                  |
+| ----------- | --------------------- | ----------------------------------------------------------------------------------------------- |
+| Unit        | `npm test`            | The rules and the build tools, in Node                                                          |
+| Syntax gate | `npm run build`       | The bundle has no syntax release Rhino rejects                                                  |
+| Rhino check | `npm run check:rhino` | The bundle loads, its handlers and the pure rules give the right results on Rhino 81, 85 and 91 |
+| Jar check   | `npm run check:jar`   | The jar opens the way NeoForge and KubeLoader open it                                           |
+| In the game | `/threat test`        | Real events, real attributes, the real HUD                                                      |
 
 When you add a handler, add its case to `test/rhino/scenario.js`. The Rhino check uses a plain
 Rhino context, not KubeJS's, so Java interop (string ids turned into registry objects, Java

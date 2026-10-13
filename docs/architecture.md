@@ -18,7 +18,8 @@ build/contentpack/
    ├── contentpack.json
    └── server_scripts/diamond-threat.js ──▶ linked into a game instance for development
    │
-   ├──▶ npm run check:rhino   the bundle on Rhino 81, 85 and 91, driven by test/rhino/scenario.js
+   ├──▶ npm run check:rhino   the bundle on Rhino 81, 85 and 91: test/rhino/scenario.js drives the
+   │                          handlers, test/rhino/core-scenario.js calls the pure rules
    ▼
 npm run pack
    ▼
@@ -75,7 +76,9 @@ So the code targets the release builds. Four layers keep it inside that subset:
 1. **Types:** `tsconfig.json` gives `src/` only the ES2015 library plus `Array.prototype.includes`,
    so `Object.fromEntries` or `.at()` do not type-check.
 2. **Lint:** `eslint.config.mjs` bans the unsupported syntax in `src/` with a message at the line.
-3. **esbuild** lowers `?.`, `??` and logical assignment, which it can. It cannot lower the rest.
+3. **esbuild** lowers `?.`, `??` and logical assignment, which it can. It cannot lower the rest,
+   and it is told (`supported` in `scripts/lib/bundle.ts`) never to generate it: left alone, it
+   prints `{ id: id }` as the shorthand `{ id }`, which release Rhino rejects.
 4. **The syntax gate** parses the built bundle and refuses anything on the list, whatever wrote
    it. Then the Rhino check runs the bundle on the real builds.
 

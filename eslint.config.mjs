@@ -40,7 +40,7 @@ export default defineConfig(
   },
   {
     // The game scripts: KubeJS's Rhino, not Node.
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'test/rhino/*.ts'],
     ignores: ['src/**/*.d.ts'],
     rules: {
       'no-restricted-syntax': ['error', ...RHINO_UNSUPPORTED],
