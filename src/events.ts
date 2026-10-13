@@ -27,8 +27,11 @@ export function registerEvents(): void {
     ticks++;
     const server = event.server;
     if (ticks % SWEEP_TICKS === 0) {
-      rescaleEveryone(server);
-      reportInterop();
+      try {
+        rescaleEveryone(server);
+      } finally {
+        reportInterop();
+      }
     } else {
       let players = serverPlayers(server);
       let size = listSize(players);

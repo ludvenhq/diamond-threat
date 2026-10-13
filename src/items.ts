@@ -65,10 +65,10 @@ export function carriedStacks(player: KubePlayer): Stack[] {
   const size = inventorySize(player);
   for (let slot = 0; slot < size; slot++) {
     let item = inventoryItem(player, slot);
-    if (!isEmptyStack(item)) stacks.push(toStack(item, 0));
+    if (item !== null && !isEmptyStack(item)) stacks.push(toStack(item, 0));
   }
   const carried = carriedOf(player);
-  if (!isEmptyStack(carried)) stacks.push(toStack(carried, 0));
+  if (carried !== null && !isEmptyStack(carried)) stacks.push(toStack(carried, 0));
   return stacks;
 }
 

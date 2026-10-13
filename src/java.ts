@@ -51,9 +51,15 @@ function num(value: unknown): number {
 
 function object(value: unknown, what: string): object {
   if (typeof value !== 'object' || value === null) {
-    throw new Error(`Diamond Threat: cannot read ${what}`);
+    throw new Error(
+      `Diamond Threat: cannot read ${what} (got ${value === null ? 'null' : typeof value})`,
+    );
   }
   return value;
+}
+
+function objectOrNull(value: unknown): object | null {
+  return typeof value === 'object' && value !== null ? value : null;
 }
 
 // ---- Collections ----
@@ -152,14 +158,20 @@ export function inventorySize(player: KubePlayer): number {
   return num(read(inventoryOf(player), ['containerSize', 'getContainerSize']));
 }
 
-export function inventoryItem(player: KubePlayer, slot: number): ItemStack {
-  return inventoryOf(player).getItem(slot);
+/** The stack in a slot, or null where the game hands the script nothing for an empty slot. */
+export function inventoryItem(player: KubePlayer, slot: number): ItemStack | null {
+  return objectOrNull(inventoryOf(player).getItem(slot)) as ItemStack | null;
 }
 
-/** The stack on the cursor while a screen is open. */
-export function carriedOf(player: KubePlayer): ItemStack {
-  const menu = object(read(player, ['containerMenu']), 'the open screen');
-  return object(read(menu, ['carried', 'getCarried']), 'the cursor') as ItemStack;
+/**
+ * The stack on the cursor while a screen is open, or null when it cannot be read: in the game on
+ * 2026-10-13 it read as nothing, and a missing cursor stack must not stop the count.
+ */
+export function carriedOf(player: KubePlayer): ItemStack | null {
+  const menu = objectOrNull(read(player, ['containerMenu']));
+  return menu === null
+    ? null
+    : (objectOrNull(read(menu, ['carried', 'getCarried'])) as ItemStack | null);
 }
 
 // ---- Items ----
