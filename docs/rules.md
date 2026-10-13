@@ -127,5 +127,5 @@ For testing and filming; they need operator permission (level 2).
 | Command                        | What it does                                                                |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | `/threat set <player> <worth>` | Adds a worth offset to the player until cleared; the boss bar shows the sum |
-| `/threat clear <player>`       | Removes the offset                                                          |
+| `/threat clear [player]`       | Removes the offset; with no player, yours and the `/threat test` zombie     |
 | `/threat apply`                | Re-scales every hostile now                                                 |

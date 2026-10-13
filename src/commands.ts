@@ -54,6 +54,16 @@ function clearOffset(source: CommandSource, target: KubePlayer): number {
   return 1;
 }
 
+/**
+ * `/threat clear` with no player: removes your own offset and the `/threat test` zombie and bar,
+ * the reset after a filming setup (the first playtest typed this and got "incomplete command").
+ */
+function clearAll(source: CommandSource): number {
+  clearTest(source);
+  if (source.player !== null) clearOffset(source, source.player);
+  return 1;
+}
+
 /** `/threat apply`: counts every player again and re-scales every hostile around them now. */
 function applyNow(source: CommandSource): number {
   const count = rescaleEveryone(source.server);
@@ -97,6 +107,7 @@ export function registerCommands(): void {
         .then(
           commands
             .literal('clear')
+            .executes((context) => clearAll(context.source))
             .then(
               commands
                 .argument('player', args.PLAYER.create(event))

@@ -624,6 +624,17 @@ check(
   'bar back to 8',
 );
 
+// /threat clear with no player removes your offset and the test zombie and bar.
+alex.persistentData.putInt('diamond_threat_offset', 6);
+server.commands = [];
+check(threat.child('clear').run({ source: source }) === 1, '/threat clear returns 1');
+check(
+  server.commands.indexOf('bossbar remove diamond_threat:test') >= 0 &&
+    server.commands.indexOf('kill @e[tag=diamond_threat_test]') >= 0,
+  '/threat clear removes the test bar and zombie, got ' + server.commands.join(' | '),
+);
+check(!alex.persistentData.contains('diamond_threat_offset'), '/threat clear removes your offset');
+
 // /threat apply re-scales everything now and says how many.
 check(threat.child('apply').run({ source: source }) === 1, '/threat apply returns 1');
 check(/hostile mobs re-scaled\.$/.test(alex.messages[alex.messages.length - 1]), 'apply reports');
