@@ -35,8 +35,8 @@ describe('eat', () => {
     const fed = eat(NOTHING_EATEN, 8, 'chestplate');
     const open = { headroom: 8, width: 5 };
     const zombie = { height: 1.95, width: 0.6 };
-    expect(mobScale(8, fed.worth, open, zombie)).toBe(2);
-    expect(mobScale(8, 0, open, zombie)).toBe(1.5);
+    expect(mobScale(4, fed.worth, open, zombie)).toBe(2.5);
+    expect(mobScale(4, 0, open, zombie)).toBe(1.5);
   });
 });
 

@@ -43,11 +43,11 @@ Every hostile mob near you is scaled by your worth plus the worth it has eaten (
 [Drop and eat](#drop-and-eat)):
 
 ```
-scale = clamp(1 + (your worth + eaten worth) / 16, 1, 4)
+scale = clamp(1 + (your worth + eaten worth) / 8, 1, 4)
 ```
 
-At 16 worth a zombie is twice its size; at 48 it is four times its size, about eight blocks tall.
-That is the cap.
+At 8 worth, one good vein of diamonds, a zombie is twice its size; at 24 it is four times its size,
+about eight blocks tall. That is the cap.
 
 **Hostile** means every mob in the vanilla monster category except the bosses: the warden, the
 ender dragon, the wither and the elder guardian never grow. Neutral monsters (endermen, piglins,
@@ -65,7 +65,7 @@ scale <= width / mob width       (clear width on the narrower horizontal axis, m
 A zombie is 1.95 blocks tall and 0.6 wide. In a two-high tunnel it stays normal size and grows
 the moment it follows you into a cavern; in a two-wide ravine it grows to about x3.3 and no more.
 Because room is measured only 8 blocks up, a tall mob stops early even in the open: an enderman
-reaches about x2.7. Scale moves in steps of 1/16, the change one diamond makes.
+reaches about x2.7. Scale moves in steps of 1/16; one diamond is x0.125.
 
 ## What growing does
 
@@ -108,7 +108,7 @@ that despawns takes what it ate with it, just like a dropped item that despawns.
 
 ## On screen
 
-- **Boss bar:** `THREAT x2.5 ◆ 24`, your scale multiplier and your worth. The bar fills to 48, the
+- **Boss bar:** `THREAT x2.5 ◆ 12`, your scale multiplier and your worth. The bar fills to 24, the
   worth where scale caps, in six notches of x0.5. It is green below x2, yellow below x3 and red
   from x3. A mob that has eaten is bigger than the bar says.
 - **Action bar** when your worth goes up: `+1 ◆ mobs grow`, with the worth gained.

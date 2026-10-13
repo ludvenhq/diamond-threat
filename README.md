@@ -17,7 +17,7 @@ for good. Keep them in an ender chest, or throw them into lava.
 
 - **Worth.** Diamonds count 1, a block of diamond 9, diamond gear its recipe cost. Everything you
   carry counts, including shulker boxes and bundles. Chests in the world and your ender chest do not.
-- **Size.** Hostile mobs near you scale by `1 + worth / 16`, up to four times their size at 48
+- **Size.** Hostile mobs near you scale by `1 + worth / 8`, up to four times their size at 24
   worth, with more health, damage and knockback resistance. They never grow bigger than the room
   around them.
 - **Drop and eat.** Dropping diamonds shrinks the mobs, but a mob that reaches a dropped diamond

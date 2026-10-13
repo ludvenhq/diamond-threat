@@ -403,12 +403,12 @@ check(
   'summon command, got ' + testServer.commands[0],
 );
 var expectedBar = [
-  'bossbar add diamond_threat:test {"text":"THREAT x4 ◆ 48"}',
-  'bossbar set diamond_threat:test name {"text":"THREAT x4 ◆ 48"}',
+  'bossbar add diamond_threat:test {"text":"THREAT x4 ◆ 24"}',
+  'bossbar set diamond_threat:test name {"text":"THREAT x4 ◆ 24"}',
   'bossbar set diamond_threat:test color red',
   'bossbar set diamond_threat:test style notched_6',
-  'bossbar set diamond_threat:test max 48',
-  'bossbar set diamond_threat:test value 48',
+  'bossbar set diamond_threat:test max 24',
+  'bossbar set diamond_threat:test value 24',
   'bossbar set diamond_threat:test players Alex',
 ];
 for (var i = 0; i < expectedBar.length; i++) {
@@ -418,7 +418,7 @@ for (var i = 0; i < expectedBar.length; i++) {
   );
 }
 check(
-  tester.statusMessages[0] === '+48 ◆ mobs grow',
+  tester.statusMessages[0] === '+24 ◆ mobs grow',
   'action bar, got ' + tester.statusMessages[0],
 );
 check(tester.messages.length === 1, 'one chat message');
@@ -462,12 +462,12 @@ function ticks(count) {
   }
 }
 
-// Alex carries 8 diamonds and a shulker box holding a bundle of 8 more: 16 worth, x2.
+// Alex carries 4 diamonds and a shulker box holding a bundle of 4 more: 8 worth, x2.
 var alex = fakePlayer(level, server, 'Alex', 0, 64, 0);
 var alexBar = 'diamond_threat:threat_' + alex.uuid;
-alex.slots[0] = fakeItem('minecraft:diamond', 8);
+alex.slots[0] = fakeItem('minecraft:diamond', 4);
 alex.slots[1] = fakeItem('minecraft:shulker_box', 1, [
-  fakeItem('minecraft:bundle', 1, null, [fakeItem('minecraft:diamond', 8)]),
+  fakeItem('minecraft:bundle', 1, null, [fakeItem('minecraft:diamond', 4)]),
 ]);
 var zombie = fakeMob(level, server, 'minecraft:zombie', 5, 64, 0, 0.6, 1.95, 3);
 var creeper = fakeMob(level, server, 'minecraft:creeper', -5, 64, 0, 0.6, 1.7, null);
@@ -481,8 +481,8 @@ check(server.commands.length === 0, 'quiet before the sweep, got ' + server.comm
 // The sweep: the boss bar appears, the mobs within 48 blocks grow and roar.
 ticks(1);
 check(
-  server.commands.indexOf('bossbar add ' + alexBar + ' {"text":"THREAT x2 ◆ 16"}') >= 0,
-  'boss bar shows x2 and 16, got ' + server.commands.join(' | '),
+  server.commands.indexOf('bossbar add ' + alexBar + ' {"text":"THREAT x2 ◆ 8"}') >= 0,
+  'boss bar shows x2 and 8, got ' + server.commands.join(' | '),
 );
 check(server.commands.indexOf('bossbar set ' + alexBar + ' color yellow') >= 0, 'bar is yellow');
 check(server.commands.indexOf('bossbar set ' + alexBar + ' players Alex') >= 0, 'bar for Alex');
@@ -507,19 +507,19 @@ check(
 );
 check(commandsLike(server, /particle minecraft:poof/).length === 2, 'two puffs');
 
-// Picking up 16 more diamonds: the action bar, a red x3 bar, the zombie grows at once without a
+// Picking up 8 more diamonds: the action bar, a red x3 bar, the zombie grows at once without a
 // second roar so soon.
 server.commands = [];
-alex.slots[2] = fakeItem('minecraft:diamond', 16);
+alex.slots[2] = fakeItem('minecraft:diamond', 8);
 __kjs.inventoryHandlers[0]({ player: alex });
 ticks(1);
 check(
-  alex.statusMessages.join() === '+16 ◆ mobs grow',
-  'action bar +16, got ' + alex.statusMessages.join(),
+  alex.statusMessages.join() === '+8 ◆ mobs grow',
+  'action bar +8, got ' + alex.statusMessages.join(),
 );
 check(
-  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x3 ◆ 32"}') >= 0,
-  'bar shows x3 and 32',
+  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x3 ◆ 16"}') >= 0,
+  'bar shows x3 and 16',
 );
 check(server.commands.indexOf('bossbar set ' + alexBar + ' color red') >= 0, 'bar is red');
 check(zombie.attrs[SCALE] === 3 && zombie.health === 180, 'zombie x3 with 180 health');
@@ -548,14 +548,14 @@ spawned({ entity: openZombie, level: level });
 check(openZombie.attrs[SCALE] === 2, 'open zombie arrives x2, got ' + openZombie.attrs[SCALE]);
 check(server.commands.length === 0, 'spawns make no sound or particles');
 
-// A diamond block dropped at the zombie's feet is eaten: gone, 9 worth on the zombie, x2.5625.
+// A diamond block dropped at the zombie's feet is eaten: gone, 9 worth on the zombie, 8 + 9 = 17, x3.125.
 var block = fakeDrop(level, server, fakeItem('minecraft:diamond_block', 1), 5.5, 64, 0);
 var dirt = fakeDrop(level, server, fakeItem('minecraft:dirt', 64), 4.5, 64, 0);
 ticks(4);
 check(block.removed, 'the diamond block is eaten');
 check(!dirt.removed, 'dirt is not');
 check(zombie.persistentData.getInt('diamond_threat_eaten_worth') === 9, 'zombie ate 9 worth');
-check(zombie.attrs[SCALE] === 2.5625, 'zombie x2.5625, got ' + zombie.attrs[SCALE]);
+check(zombie.attrs[SCALE] === 3.125, 'zombie x3.125, got ' + zombie.attrs[SCALE]);
 check(commandsLike(server, /entity\.generic\.eat/).length === 1, 'one crunch');
 
 // When it dies it drops the block back and forgets it.
@@ -598,33 +598,30 @@ check(hurt(zombie, 'inWall') === true, 'x2.5 zombie ignores suffocation');
 check(hurt(zombie, 'mob') === false, 'but not a hit');
 check(hurt(tunnelZombie, 'inWall') === false, 'a normal-sized zombie suffocates');
 
-// /threat set adds 10 worth until /threat clear.
+// /threat set adds 4 worth until /threat clear.
 var source = { player: alex, server: server };
 check(
   threat
     .child('set')
     .child('player')
     .child('worth')
-    .run({ source: source, args: { player: alex, worth: 10 } }) === 1,
+    .run({ source: source, args: { player: alex, worth: 4 } }) === 1,
   '/threat set returns 1',
 );
 ticks(1);
 check(
-  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x2.6 ◆ 26"}') >= 0,
+  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x2.5 ◆ 12"}') >= 0,
   'bar shows the offset, got ' + server.commands.join(' | '),
 );
-check(
-  alex.statusMessages[1] === '+10 ◆ mobs grow',
-  'action bar +10, got ' + alex.statusMessages[1],
-);
+check(alex.statusMessages[1] === '+4 ◆ mobs grow', 'action bar +4, got ' + alex.statusMessages[1]);
 threat
   .child('clear')
   .child('player')
   .run({ source: source, args: { player: alex } });
 ticks(1);
 check(
-  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x2 ◆ 16"}') >= 0,
-  'bar back to 16',
+  server.commands.indexOf('bossbar set ' + alexBar + ' name {"text":"THREAT x2 ◆ 8"}') >= 0,
+  'bar back to 8',
 );
 
 // /threat apply re-scales everything now and says how many.

@@ -20,11 +20,11 @@ const OPEN = { headroom: 8, width: 5 };
 describe('scaleForWorth', () => {
   it.each([
     [0, 1],
-    [1, 1.0625],
-    [8, 1.5],
-    [16, 2],
-    [24, 2.5],
-    [48, 4],
+    [1, 1.125],
+    [4, 1.5],
+    [8, 2],
+    [12, 2.5],
+    [24, 4],
     [500, 4],
     [-5, 1],
   ])('worth %i gives x%d', (worth, scale) => {
@@ -32,7 +32,7 @@ describe('scaleForWorth', () => {
   });
 
   it('caps exactly at the bar maximum', () => {
-    expect(CAP_WORTH).toBe(48);
+    expect(CAP_WORTH).toBe(24);
     expect(scaleForWorth(CAP_WORTH - 1)).toBeLessThan(4);
     expect(scaleForWorth(CAP_WORTH)).toBe(4);
   });
@@ -76,13 +76,13 @@ describe('roomCap', () => {
 
 describe('mobScale', () => {
   it('adds the player worth and the eaten worth', () => {
-    expect(mobScale(16, 0, OPEN, ZOMBIE)).toBe(2);
-    expect(mobScale(16, 8, OPEN, ZOMBIE)).toBe(2.5);
-    expect(mobScale(0, 8, OPEN, ZOMBIE)).toBe(1.5);
+    expect(mobScale(8, 0, OPEN, ZOMBIE)).toBe(2);
+    expect(mobScale(8, 4, OPEN, ZOMBIE)).toBe(2.5);
+    expect(mobScale(0, 4, OPEN, ZOMBIE)).toBe(1.5);
   });
 
   it('is capped by the room', () => {
-    expect(mobScale(48, 0, { headroom: 2, width: 5 }, ZOMBIE)).toBe(1);
+    expect(mobScale(24, 0, { headroom: 2, width: 5 }, ZOMBIE)).toBe(1);
   });
 });
 

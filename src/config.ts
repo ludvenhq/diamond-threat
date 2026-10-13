@@ -59,16 +59,19 @@ export const ITEM_WORTH: ReadonlyMap<string, number> = new Map([
   ['minecraft:jukebox', 1],
 ]);
 
-/** One unit of scale per this much worth: scale = 1 + worth / WORTH_PER_SCALE. */
-export const WORTH_PER_SCALE = 16;
+/**
+ * One unit of scale per this much worth: scale = 1 + worth / WORTH_PER_SCALE. Lowered from 16 to 8
+ * after the first playtest (Vlad, 2026-10-14): a vein of 4 diamonds made x1.25, too small to see.
+ */
+export const WORTH_PER_SCALE = 8;
 
-/** The largest scale; reached at WORTH_PER_SCALE * (MAX_SCALE - 1) = 48 worth. */
+/** The largest scale; reached at WORTH_PER_SCALE * (MAX_SCALE - 1) = 24 worth. */
 export const MAX_SCALE = 4;
 
 /** The worth where scale caps, and the boss bar's maximum. */
 export const CAP_WORTH = WORTH_PER_SCALE * (MAX_SCALE - 1);
 
-/** Scales are kept in steps of 1/16, the change one diamond makes. */
+/** Scales are kept in steps of 1/16; one diamond is two steps. */
 export const SCALE_STEP = 1 / 16;
 
 /** How far up (blocks) the clear space above a mob is measured. */

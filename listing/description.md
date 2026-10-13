@@ -20,7 +20,7 @@ So what do you do with your diamonds?
 
 - **Worth.** A diamond is worth 1, a block of diamond 9, diamond gear its recipe cost. Everything
   you carry counts, shulker boxes and bundles included. Crafting does not hide anything.
-- **Size.** Hostile mobs near you grow with your worth, up to four times their size at 48, with
+- **Size.** Hostile mobs near you grow with your worth, up to four times their size at 24, with
   more health, more damage and more knockback resistance. They never grow bigger than the room
   around them, so a cave tunnel keeps them small until they follow you into a cavern.
 - **Drop and eat.** Dropping diamonds shrinks the mobs. But a mob that reaches a dropped diamond

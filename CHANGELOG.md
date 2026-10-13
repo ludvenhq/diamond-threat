@@ -7,6 +7,11 @@ is a notable change.
 
 ## [Unreleased]
 
+### Changed
+
+- Worth per step of scale lowered from 16 to 8 after the first playtest: mobs are twice their
+  size at 8 worth and four times at 24.
+
 ### Added
 
 - The project: build pipeline, docs and `/threat test`, which proves the toolchain in game.

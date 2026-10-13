@@ -33,15 +33,15 @@ same(core.isEdible(stack('minecraft:netherite_sword', 1)), false, 'netherite is 
 
 // Scale.
 same(core.scaleForWorth(0), 1, 'scale at 0');
-same(core.scaleForWorth(24), 2.5, 'scale at 24');
-same(core.scaleForWorth(48), 4, 'scale at 48');
+same(core.scaleForWorth(12), 2.5, 'scale at 12');
+same(core.scaleForWorth(24), 4, 'scale at 24');
 same(core.scaleForWorth(500), 4, 'scale capped');
 var zombie = { height: 1.95, width: 0.6 };
 same(core.roomCap({ headroom: 2, width: 5 }, zombie), 1, 'a two-high tunnel');
 same(core.roomCap({ headroom: 8, width: 2 }, zombie), 3.3125, 'a two-wide ravine');
-same(core.mobScale(40, 8, { headroom: 8, width: 5 }, zombie), 4, 'player and eaten worth add up');
+same(core.mobScale(20, 4, { headroom: 8, width: 5 }, zombie), 4, 'player and eaten worth add up');
 same(core.scaleChanged(2.5, 2.5), false, 'no change');
-same(core.scaleChanged(2.5, 2.5625), true, 'one diamond is a change');
+same(core.scaleChanged(2.5, 2.5625), true, 'one step is a change');
 
 // Stats.
 var stats = core.scaledStats({ maxHealth: 20, attackDamage: 3 }, 2);
@@ -69,24 +69,20 @@ same(core.nearestPlayer(players, { x: 0, y: 0, z: 0 }, 5), null, 'nobody in rang
 same(core.formatScale(4), '4', 'x4');
 same(core.formatScale(2.5), '2.5', 'x2.5');
 same(core.formatScale(1.0625), '1.1', 'x1.1');
-same(core.threatBar(24, 'a:b').title, 'THREAT x2.5 ◆ 24', 'bar title at 24');
-same(core.threatBar(48, 'a:b').title, 'THREAT x4 ◆ 48', 'bar title at 48');
-same(core.threatBar(60, 'a:b').value, 48, 'bar value capped');
-same(
-  core.threatColor(15) + core.threatColor(16) + core.threatColor(32),
-  'greenyellowred',
-  'colours',
-);
+same(core.threatBar(12, 'a:b').title, 'THREAT x2.5 ◆ 12', 'bar title at 12');
+same(core.threatBar(24, 'a:b').title, 'THREAT x4 ◆ 24', 'bar title at 24');
+same(core.threatBar(60, 'a:b').value, 24, 'bar value capped');
+same(core.threatColor(7) + core.threatColor(8) + core.threatColor(16), 'greenyellowred', 'colours');
 same(core.pickupMessage(3), '+3 ◆ mobs grow', 'pickup message');
 same(core.pickupMessage(-1), null, 'no message on a drop');
-var commands = core.bossbarCommands(core.threatBar(24, core.playerBarId('0a1b-2c')), 'Alex');
+var commands = core.bossbarCommands(core.threatBar(12, core.playerBarId('0a1b-2c')), 'Alex');
 same(
   commands[0],
-  'bossbar add diamond_threat:threat_0a1b-2c {"text":"THREAT x2.5 ◆ 24"}',
+  'bossbar add diamond_threat:threat_0a1b-2c {"text":"THREAT x2.5 ◆ 12"}',
   'bar add',
 );
-same(commands[4], 'bossbar set diamond_threat:threat_0a1b-2c max 48', 'bar max');
-same(commands[5], 'bossbar set diamond_threat:threat_0a1b-2c value 24', 'bar value');
+same(commands[4], 'bossbar set diamond_threat:threat_0a1b-2c max 24', 'bar max');
+same(commands[5], 'bossbar set diamond_threat:threat_0a1b-2c value 12', 'bar value');
 
 // Containers, the next scale, the eaten record.
 same(core.isContainerItem('minecraft:lime_shulker_box'), true, 'a shulker box opens');

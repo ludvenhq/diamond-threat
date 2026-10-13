@@ -18,7 +18,7 @@ describe('formatScale', () => {
 
 describe('threatColor', () => {
   it('is green below x2, yellow below x3, red from x3', () => {
-    expect([0, 15, 16, 31, 32, 48, 90].map(threatColor)).toEqual([
+    expect([0, 7, 8, 15, 16, 24, 90].map(threatColor)).toEqual([
       'green',
       'green',
       'yellow',
@@ -31,21 +31,21 @@ describe('threatColor', () => {
 });
 
 describe('threatBar', () => {
-  it('shows the multiplier and the worth, out of 48 in six notches', () => {
-    expect(threatBar(24, 'diamond_threat:threat_x')).toEqual({
+  it('shows the multiplier and the worth, out of 24 in six notches', () => {
+    expect(threatBar(12, 'diamond_threat:threat_x')).toEqual({
       id: 'diamond_threat:threat_x',
-      title: 'THREAT x2.5 ◆ 24',
+      title: 'THREAT x2.5 ◆ 12',
       color: 'yellow',
       notches: 6,
-      max: 48,
-      value: 24,
+      max: 24,
+      value: 12,
     });
   });
 
   it('keeps counting worth past the cap, with the bar full', () => {
     const bar = threatBar(70, 'a:b');
     expect(bar.title).toBe('THREAT x4 ◆ 70');
-    expect(bar.value).toBe(48);
+    expect(bar.value).toBe(24);
   });
 
   it('starts at x1 with nothing carried', () => {
