@@ -32,13 +32,23 @@ is [description.md](description.md); the per-version fields are in
 
 Modrinth reviews new projects before they go public, so submit a day ahead if possible.
 
+Created 2026-10-14 by Claude from the ludvenhq account (Vlad's go): project 28qnQZfY,
+https://modrinth.com/mod/diamond-threat. Summary, description, MIT, source and issues links, categories
+(game-mechanics, mobs; adventure), icon, gallery (grow.gif featured plus the three screenshots), version
+vH26o5bL "Diamond Threat 0.1.0" (Release, NeoForge 1.21.1, client and server required, KubeJS umyGl7zF
+and KubeLoader Q6dKnkVg required, the release jar: sha512 77ced874...). Disclosure "Contains
+AI-generated content" is on: the mod's code is written with Claude, and Modrinth's rules require it
+for a substantial amount of AI-generated code. Submitted for review the same day. The version
+upload dropzone has no file input, so the jar was handed to it as a drop event.
+
 ## CurseForge
 
 Created 2026-10-14 by Claude from the ludvenhq account (Vlad's go): project 1744381,
 https://www.curseforge.com/minecraft/mc-mods/diamond-threat. General, description, MIT, third-party
 distribution allowed, GitHub source, default relations (KubeJS and KubeLoader required) and media are
 set. File 9170925, "Diamond Threat 0.1.0" (the release jar, sha256 8498ad33...), Beta, 1.21.1,
-NeoForge, Java 21, client and server, uploaded 2026-10-14 at Vlad's word: moderation started. The logo cropper takes a 400 by 400 box at 1:1, so
+NeoForge, Java 21, client and server, uploaded 2026-10-14 at Vlad's word: moderation started. Switched from Beta to
+Release the same day (Vlad): CurseForge hides Beta files unless players turn on the Beta filter. The logo cropper takes a 400 by 400 box at 1:1, so
 it gets `icon-400.png`; images are capped at 2 MB, so the gallery has `grow-small.gif`.
 
 | Field         | Value                                              |
