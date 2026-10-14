@@ -37,7 +37,8 @@ Modrinth reviews new projects before they go public, so submit a day ahead if po
 Created 2026-10-14 by Claude from the ludvenhq account (Vlad's go): project 1744381,
 https://www.curseforge.com/minecraft/mc-mods/diamond-threat. General, description, MIT, third-party
 distribution allowed, GitHub source, default relations (KubeJS and KubeLoader required) and media are
-set; no file yet, so moderation has not started. The logo cropper takes a 400 by 400 box at 1:1, so
+set. File 9170925, "Diamond Threat 0.1.0" (the release jar, sha256 8498ad33...), Beta, 1.21.1,
+NeoForge, Java 21, client and server, uploaded 2026-10-14 at Vlad's word: moderation started. The logo cropper takes a 400 by 400 box at 1:1, so
 it gets `icon-400.png`; images are capped at 2 MB, so the gallery has `grow-small.gif`.
 
 | Field         | Value                                              |
