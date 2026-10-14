@@ -28,7 +28,7 @@ So what do you do with your diamonds?
   does.
 - **Stashes.** Your ender chest and any chest in the world are safe. The ender chest is the only
   stash that travels with you.
-- **On screen.** One boss bar, `THREAT x2.5 ◆ 24`, and a message each time your worth goes up.
+- **On screen.** One boss bar, `THREAT x2.5 ◆ 12`, and a message each time your worth goes up.
   Nothing else, so it films clean.
 
 <!-- MEDIA: a screenshot, the THREAT bar in red over a giant zombie in a cavern -->

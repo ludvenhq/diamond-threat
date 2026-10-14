@@ -118,7 +118,7 @@ Nothing else is added to the screen.
 ## Multiplayer
 
 Worth is per player, and a mob takes the worth of the nearest player. This is built for a few
-friends on a server or a Realm, not for a server with dozens of players.
+friends on a server (Realms do not take mods), not for a server with dozens of players.
 
 ## Commands
 

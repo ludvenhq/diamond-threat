@@ -48,8 +48,9 @@ description has neither.
 
 ## Assets for launch day
 
-- [ ] `icon.png`, 512 by 512: a zombie silhouette with a diamond, Ludven's night-departures colours
-- [ ] A GIF, 5 to 8 seconds: diamonds picked up, a zombie grows, the THREAT bar fills
-- [ ] Three screenshots at 1920 by 1080: a giant in a cavern, the drop-and-eat moment, the bar in
-      red
+- [x] `icon.png`, 512 by 512: a pixel zombie face, a diamond and the red THREAT bar, on the hub's night colours (2026-10-14)
+- [x] `grow.gif`, 5 seconds, 560 by 315, 3.9 MB: a zombie villager grows the moment 11 diamonds are picked up, the bar goes from x1 to x2.4 (Vlad's recording 2026-10-14 09-31-38, 1:37-1:42)
+- [x] Three screenshots at 1920 by 1080 in `screenshots/`: `giant-in-a-cave.jpg` (bar at x1, a zombie
+      that ate the diamonds twice the size of the one in front), `zombie-eats-a-diamond.jpg`,
+      `threat-bar-red.jpg` (x4 at night, a giant beside the chest); the hub uses the same three
 - [ ] The first short, posted by Vlad, linked from the description once it is up

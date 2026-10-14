@@ -22,7 +22,7 @@ for good. Keep them in an ender chest, or throw them into lava.
   around them.
 - **Drop and eat.** Dropping diamonds shrinks the mobs, but a mob that reaches a dropped diamond
   item eats it and keeps its worth until it dies. Kill it to get your diamonds back.
-- **On screen.** A `THREAT x2.5 ◆ 24` boss bar and a `+1 ◆ mobs grow` message when you pick one up.
+- **On screen.** A `THREAT x2.5 ◆ 12` boss bar and a `+1 ◆ mobs grow` message when you pick one up.
 
 The exact rules, numbers and commands are in [docs/rules.md](docs/rules.md).
 
