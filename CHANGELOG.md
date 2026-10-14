@@ -7,18 +7,22 @@ is a notable change.
 
 ## [Unreleased]
 
-### Changed
+## [0.1.0] - 2026-10-14
 
-- Worth per step of scale lowered from 16 to 8 after the first playtest: mobs are twice their
-  size at 8 worth and four times at 24.
+The first release.
 
 ### Added
 
-- The project: build pipeline, docs and `/threat test`, which proves the toolchain in game.
 - The rules in the game: carried worth (with nested shulker boxes and bundles), growing hostiles
   with the room cap, health, attack and knockback resistance, the roar and particles, drop and
   eat with the eaten items dropped back on death, suffocation immunity for big mobs, the THREAT
   boss bar and the action bar.
-- `/threat set`, `/threat clear` and `/threat apply` for testing and filming.
-- The lint rule and the build's syntax gate refuse a `const` inside a block, which breaks on every
-  Rhino build.
+- Mobs are twice their size at 8 worth and four times at 24, the cap (tuned in the first
+  playtest, down from 16 worth per step).
+- `/threat set`, `/threat clear` and `/threat apply` for testing and filming, and `/threat test`,
+  which proves the install in game.
+- The build pipeline and docs, with a lint rule and a syntax gate that refuse a `const` inside a
+  block, which breaks on every Rhino build.
+
+[Unreleased]: https://github.com/ludvenhq/diamond-threat/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ludvenhq/diamond-threat/releases/tag/v0.1.0

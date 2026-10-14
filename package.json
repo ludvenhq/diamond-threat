@@ -1,6 +1,6 @@
 {
   "name": "diamond-threat",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Minecraft but the diamonds you carry make the monsters bigger. KubeJS server scripts for NeoForge 1.21.1, written in TypeScript.",
   "license": "MIT",
