@@ -34,6 +34,12 @@ Modrinth reviews new projects before they go public, so submit a day ahead if po
 
 ## CurseForge
 
+Created 2026-10-14 by Claude from the ludvenhq account (Vlad's go): project 1744381,
+https://www.curseforge.com/minecraft/mc-mods/diamond-threat. General, description, MIT, third-party
+distribution allowed, GitHub source, default relations (KubeJS and KubeLoader required) and media are
+set; no file yet, so moderation has not started. The logo cropper takes a 400 by 400 box at 1:1, so
+it gets `icon-400.png`; images are capped at 2 MB, so the gallery has `grow-small.gif`.
+
 | Field         | Value                                              |
 | ------------- | -------------------------------------------------- |
 | Class         | Mods                                               |
