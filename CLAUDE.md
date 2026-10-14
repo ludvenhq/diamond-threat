@@ -17,8 +17,9 @@ nothing here or in commits that should not be read by players.
 - **Tests:** the rules and the build tools are unit tested; every handler gets a case in
   `test/rhino/scenario.js`. Do not add tests for code that only calls the game.
 - **Branches:** work on `dev`. `main` is what is released and moves only by a pull request that
-  Vlad merges. Never push to `main`, never merge into it.
+  the owner merges. Never push to `main`, never merge into it.
 - **Never publish:** no CurseForge or Modrinth upload, no published GitHub release, no public
-  repo switch without Vlad. Tags and draft releases only when he says so.
-- **Formatting:** dates are absolute, estimates carry `[est]`, decisions record who made them and
-  when.
+  repo switch without the owner. Tags and draft releases only when the owner says so.
+- **Formatting:** dates are absolute, estimates carry `[est]`, decisions record when they were made.
+  No personal names in commits, pull requests, release notes or repo content (decided
+  2026-10-14).
