@@ -61,7 +61,7 @@ export const ITEM_WORTH: ReadonlyMap<string, number> = new Map([
 
 /**
  * One unit of scale per this much worth: scale = 1 + worth / WORTH_PER_SCALE. Lowered from 16 to 8
- * after the first playtest (Vlad, 2026-10-14): a vein of 4 diamonds made x1.25, too small to see.
+ * after the first playtest (2026-10-14): a vein of 4 diamonds made x1.25, too small to see.
  */
 export const WORTH_PER_SCALE = 8;
 
